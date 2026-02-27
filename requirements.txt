@@ -5,3 +5,6 @@ django-environ==0.11.2
 whitenoise==6.7.0
 django-storages==1.14.2
 google-cloud-storage==2.13.0
+djangorestframework
+google-cloud-documentai
+google-cloud-vision
