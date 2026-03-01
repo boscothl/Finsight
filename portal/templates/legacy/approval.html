@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Approvals - Finsight{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'portal/css/approval.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<header class="header">
+    <div class="logo">FinSight</div>
+    <nav class="nav-links">
+        <a href="{% url 'dashboard' %}">Financial Analytics</a>
+        <a href="#" class="active">Approvals</a>
+        <a href="#">User Control</a>
+        <a href="{% url 'chatbot' %}">Automated Reporting</a>
+        <button class="logout-btn" onclick="location.href='{% url 'login' %}'">Logout</button>
+    </nav>
+</header>
+
+<!-- Main Content -->
+<div class="main-container">
+    <!-- Left Section -->
+    <main class="left-section">
+        <!-- Pending Approvals Section -->
+        <section class="pending-approvals">
+            <h2 class="section-title">Pending Approvals</h2>
+
+            <!-- This will be dynamic later -->
+            {% if claims %}
+                {% for claim in claims %}
+                <div class="approval-card">
+                    <div class="approval-info">
+                        <h3>{{ claim.category|default:"Claim Request" }}</h3>
+                        <p>{{ claim.user.username }} ${{ claim.amount_hkd }}</p>
+                    </div>
+                    <div class="approval-actions">
+                        <form method="post" action="{% url 'approval_action' claim.id 'approve' %}" style="display:inline;">
+                             {% csrf_token %}
+                             <button type="submit" class="btn-approve">Approve</button>
+                        </form>
+                        <form method="post" action="{% url 'approval_action' claim.id 'reject' %}" style="display:inline;">
+                             {% csrf_token %}
+                             <button type="submit" class="btn-decline">Decline</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="approval-card">
+                    <div class="approval-info">
+                        <h3>No pending requests</h3>
+                        <p>All clear!</p>
+                    </div>
+                </div>
+                <!-- Mock Data for Visual Confirmation if DB is empty -->
+                <div class="approval-card">
+                    <div class="approval-info">
+                        <h3>Budget Increase Request (Mock)</h3>
+                        <p>John Smith $5,000</p>
+                    </div>
+                    <div class="approval-actions">
+                        <button class="btn-approve">Approve</button>
+                        <button class="btn-decline">Decline</button>
+                    </div>
+                </div>
+            {% endif %}
+        </section>
+
+        <!-- Approval Requests Section -->
+        <section class="approval-requests">
+            <h2 class="section-title">Approval Requests</h2>
+
+            <table class="requests-table">
+                <thead>
+                    <tr>
+                        <th>Requester</th>
+                        <th>Amount</th>
+                        <th>Date Submitted</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Emily Davis</td>
+                        <td>$7,000</td>
+                        <td>Oct 15, 2023</td>
+                        <td class="status-pending">Pending</td>
+                    </tr>
+                    <tr>
+                        <td>Michael Wilson</td>
+                        <td>$9,500</td>
+                        <td>Oct 12, 2023</td>
+                        <td class="status-approved">Approved</td>
+                    </tr>
+                    <tr>
+                        <td>Jessica Taylor</td>
+                        <td>$2,800</td>
+                        <td>Oct 10, 2023</td>
+                        <td class="status-rejected">Rejected</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Funding Pools Overview Section -->
+        <section class="funding-pools">
+            <div class="section-header">
+                <h2 class="section-title">Funding Pools Overview</h2>
+                <button class="btn-create-pool">Create Budget Pool</button>
+            </div>
+
+            <div class="pool-item">
+                <div class="pool-name">Operation Pool</div>
+                <div class="pool-progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill blue" style="width: 80%"></div>
+                    </div>
+                    <span class="pool-percentage">80%</span>
+                </div>
+                <div class="pool-cap">$80,000</div>
+            </div>
+
+            <div class="pool-item">
+                <div class="pool-name">Business Trip Pool</div>
+                <div class="pool-progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill green" style="width: 70%"></div>
+                    </div>
+                    <span class="pool-percentage">70%</span>
+                </div>
+                <div class="pool-cap">$35,000</div>
+            </div>
+            
+            <!-- More items omitted for brevity -->
+        </section>
+    </main>
+
+    <!-- Right Section (Placeholder based on TSX structure which implied it exists) -->
+    <aside class="right-section">
+        <!-- Content for right section if needed -->
+        <h3>Quick Actions</h3>
+        <p>Shortcuts here...</p>
+    </aside>
+</div>
+{% endblock %}

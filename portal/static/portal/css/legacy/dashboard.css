@@ -1,0 +1,326 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: white;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+/* Container */
+.container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    flex: 0 0 200px;
+    background-color: #9f7b4e;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    border-radius: 0 20px 20px 0;
+    box-sizing: border-box;
+}
+
+.sidebar .menu-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.sidebar .menu-item.active {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.sidebar .menu-item i {
+    margin-right: 10px;
+}
+
+.sidebar .menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Middle Section */
+.middle-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+/* Right Section */
+.right-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+/* Top Bar */
+.top-bar {
+    margin-bottom: 20px;
+}
+
+.top-bar h1 {
+    font-weight: bold;
+    margin: 0;
+}
+
+/* Dashboard Cards */
+.dashboard-cards {
+    display: flex;
+    gap: 20px; /* Reduced from 40px */
+    margin-bottom: 20px;
+    width: 520px; /* Adjusted for smaller cards and gap */
+}
+
+.card {
+    background-color: #f9f9f9;
+    padding: 20px; /* Reduced from 30px */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    flex: 1;
+}
+
+.card.large {
+    width: 250px; /* Reduced from 300px */
+    flex-shrink: 0;
+    background-color: #f9f9f9;
+}
+
+.card h2 {
+    margin: 0 0 10px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.2em;
+}
+
+.percentage {
+    background-color: #e0e0e0;
+    border-radius: 50%;
+    padding: 5px 10px;
+    font-size: 0.8em;
+}
+
+.card p {
+    font-size: 1.5em;
+    margin: 10px 0;
+    font-weight: bold;
+}
+
+.sub-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8em;
+    color: #666;
+}
+
+/* Insight Photo Container */
+.insight-photo-container {
+    margin-bottom: 20px;
+    width: 520px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.insight-photo {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Bottom Section */
+.bottom {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 0; /* Adjusted from 20px to align with other content */
+}
+
+.goals-card, .financial-overview {
+    background-color: #fce4ec; /* Pinkish background */
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+}
+
+.goals-card {
+    width: 250px;
+}
+
+.goals-card h3, .financial-overview h3 {
+    margin-top: 0;
+    font-size: 1.1em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.progress-section {
+    margin: 15px 0;
+}
+
+.goals-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.goals-text {
+    flex: 1;
+}
+
+.goals-text p {
+    margin: 0 0 5px 0;
+    font-size: 0.9em;
+}
+
+.progress-bar {
+    height: 6px;
+    background-color: #fff;
+    border-radius: 3px;
+    overflow: hidden;
+    width: 100%;
+}
+
+.progress {
+    height: 100%;
+    background-color: #333;
+    border-radius: 3px;
+}
+
+.goals-bottom {
+    font-size: 0.9em;
+    color: #555;
+    text-align: right;
+}
+
+/* Financial Overview */
+.financial-overview {
+    width: 250px;
+}
+
+.bar-segments {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.segment {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.segment span {
+    font-size: 0.85em;
+}
+
+.progress.operation { background-color: #4caf50; }
+.progress.budget { background-color: #2196f3; }
+.progress.investment { background-color: #ff9800; }
+.progress.marketing { background-color: #f44336; }
+
+
+/* Reports Section */
+.reports {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    /* box-shadow: 0 4px 12px rgba(0,0,0,0.05); */
+}
+
+.reports-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.reports-header h2 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.reports-header button {
+    background-color: #333;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.tab {
+    background: none;
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    color: #999;
+    padding-bottom: 5px;
+}
+
+.tab.active {
+    color: #333;
+    border-bottom: 2px solid #333;
+}
+
+.report-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.report-card {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    transition: transform 0.2s;
+}
+
+.report-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+.report-card i {
+    font-size: 1.2em;
+    margin-right: 15px;
+    color: #555;
+    width: 24px;
+    text-align: center;
+}
+
+.report-card .text {
+    flex: 1;
+    font-weight: 500;
+}
+
+.report-card .value {
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.value.neutral { color: #555; }
+.value.positive { color: green; }
+.value.negative { color: red; }

@@ -8,141 +8,215 @@
 {% endblock %}
 
 {% block content %}
-<!-- Header -->
-<header class="header">
-    <div class="logo">FinSight</div>
-    <nav class="nav-links">
-        <a href="{% url 'dashboard' %}">Financial Analytics</a>
-        <a href="#" class="active">Approvals</a>
-        <a href="#">User Control</a>
-        <a href="{% url 'chatbot' %}">Automated Reporting</a>
-        <button class="logout-btn" onclick="location.href='{% url 'login' %}'">Logout</button>
-    </nav>
-</header>
+<div class="approval-header">
+    <h1 class="page-title">Claims Management</h1>
+    <div class="header-actions">
+        <!-- Filter/Sort Controls -->
+        <select class="form-select filter-dropdown" onchange="filterClaims(this.value)">
+            <option value="all">All Categories</option>
+            <option value="Travel">Travel</option>
+            <option value="Meals">Meals</option>
+            <option value="Hotel">Hotel</option>
+        </select>
+        <button class="btn btn-primary" onclick="window.print()">
+            <i class="fas fa-print"></i> Report
+        </button>
+    </div>
+</div>
 
-<!-- Main Content -->
-<div class="main-container">
-    <!-- Left Section -->
-    <main class="left-section">
-        <!-- Pending Approvals Section -->
-        <section class="pending-approvals">
-            <h2 class="section-title">Pending Approvals</h2>
-
-            <!-- This will be dynamic later -->
-            {% if claims %}
-                {% for claim in claims %}
-                <div class="approval-card">
-                    <div class="approval-info">
-                        <h3>{{ claim.category|default:"Claim Request" }}</h3>
-                        <p>{{ claim.user.username }} ${{ claim.amount_hkd }}</p>
-                    </div>
-                    <div class="approval-actions">
-                        <form method="post" action="{% url 'approval_action' claim.id 'approve' %}" style="display:inline;">
-                             {% csrf_token %}
-                             <button type="submit" class="btn-approve">Approve</button>
-                        </form>
-                        <form method="post" action="{% url 'approval_action' claim.id 'reject' %}" style="display:inline;">
-                             {% csrf_token %}
-                             <button type="submit" class="btn-decline">Decline</button>
-                        </form>
-                    </div>
+<!-- Pending Grid -->
+<section class="pending-section">
+    <h2 class="section-heading">Pending Requests <span class="badge">{{ pending_count }}</span></h2>
+    <div class="grid-container">
+        {% for claim in pending_claims %}
+        <div class="claim-card card" data-category="{{ claim.category }}">
+            <div class="card-top">
+                <div class="user-avatar">{{ claim.user.username|make_list|first|upper }}</div>
+                <div class="claim-meta">
+                    <h3>{{ claim.user.username }}</h3>
+                    <span class="claim-date">{{ claim.created_at|date:"M d" }}</span>
                 </div>
-                {% endfor %}
-            {% else %}
-                <div class="approval-card">
-                    <div class="approval-info">
-                        <h3>No pending requests</h3>
-                        <p>All clear!</p>
-                    </div>
-                </div>
-                <!-- Mock Data for Visual Confirmation if DB is empty -->
-                <div class="approval-card">
-                    <div class="approval-info">
-                        <h3>Budget Increase Request (Mock)</h3>
-                        <p>John Smith $5,000</p>
-                    </div>
-                    <div class="approval-actions">
-                        <button class="btn-approve">Approve</button>
-                        <button class="btn-decline">Decline</button>
-                    </div>
-                </div>
-            {% endif %}
-        </section>
-
-        <!-- Approval Requests Section -->
-        <section class="approval-requests">
-            <h2 class="section-title">Approval Requests</h2>
-
-            <table class="requests-table">
-                <thead>
-                    <tr>
-                        <th>Requester</th>
-                        <th>Amount</th>
-                        <th>Date Submitted</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Emily Davis</td>
-                        <td>$7,000</td>
-                        <td>Oct 15, 2023</td>
-                        <td class="status-pending">Pending</td>
-                    </tr>
-                    <tr>
-                        <td>Michael Wilson</td>
-                        <td>$9,500</td>
-                        <td>Oct 12, 2023</td>
-                        <td class="status-approved">Approved</td>
-                    </tr>
-                    <tr>
-                        <td>Jessica Taylor</td>
-                        <td>$2,800</td>
-                        <td>Oct 10, 2023</td>
-                        <td class="status-rejected">Rejected</td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>
-
-        <!-- Funding Pools Overview Section -->
-        <section class="funding-pools">
-            <div class="section-header">
-                <h2 class="section-title">Funding Pools Overview</h2>
-                <button class="btn-create-pool">Create Budget Pool</button>
-            </div>
-
-            <div class="pool-item">
-                <div class="pool-name">Operation Pool</div>
-                <div class="pool-progress-container">
-                    <div class="progress-bar">
-                        <div class="progress-fill blue" style="width: 80%"></div>
-                    </div>
-                    <span class="pool-percentage">80%</span>
-                </div>
-                <div class="pool-cap">$80,000</div>
-            </div>
-
-            <div class="pool-item">
-                <div class="pool-name">Business Trip Pool</div>
-                <div class="pool-progress-container">
-                    <div class="progress-bar">
-                        <div class="progress-fill green" style="width: 70%"></div>
-                    </div>
-                    <span class="pool-percentage">70%</span>
-                </div>
-                <div class="pool-cap">$35,000</div>
+                <span class="category-tag {{ claim.category|lower }}">{{ claim.category }}</span>
             </div>
             
-            <!-- More items omitted for brevity -->
-        </section>
-    </main>
+            <div class="card-mid">
+                <p class="amount">HKD {{ claim.amount_hkd|floatformat:2 }}</p>
+                <p class="merchant"><i class="fas fa-store"></i> {{ claim.merchant|default:"Unknown Merchant" }}</p>
+            </div>
 
-    <!-- Right Section (Placeholder based on TSX structure which implied it exists) -->
-    <aside class="right-section">
-        <!-- Content for right section if needed -->
-        <h3>Quick Actions</h3>
-        <p>Shortcuts here...</p>
-    </aside>
+            <div class="card-actions">
+                <button class="btn btn-outline" onclick="openClaimModal('{{ claim.id }}')">
+                    <i class="fas fa-eye"></i> Review
+                </button>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <i class="fas fa-check-circle"></i>
+            <p>All caught up! No pending claims.</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Historical Table -->
+<section class="history-section card">
+    <h2 class="section-heading">Approval History</h2>
+    <div class="table-responsive">
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for claim in history_claims %}
+                <tr>
+                    <td>#{{ claim.id }}</td>
+                    <td>
+                        <div class="user-cell">
+                            <span class="avatar-sm">{{ claim.user.username|make_list|first|upper }}</span>
+                            {{ claim.user.username }}
+                        </div>
+                    </td>
+                    <td>{{ claim.category }}</td>
+                    <td>HKD {{ claim.amount_hkd }}</td>
+                    <td>{{ claim.created_at|date:"M d, Y" }}</td>
+                    <td>
+                        <span class="status-badge status-{{ claim.status }}">
+                            {{ claim.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn-icon"><i class="fas fa-chevron-right"></i></button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center">No history found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+
+{% block modals %}
+<!-- Review Modal -->
+<div id="claimModal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <button class="close-modal" onclick="closeClaimModal()">&times;</button>
+        <div class="modal-body split-view">
+            <!-- Left: Receipt Image -->
+            <div class="receipt-preview">
+                <img id="modal-receipt-img" src="{% static 'portal/images/receipt-placeholder.png' %}" alt="Receipt">
+                <div class="zoom-controls">
+                    <button class="btn-sm"><i class="fas fa-search-plus"></i></button>
+                    <button class="btn-sm"><i class="fas fa-search-minus"></i></button>
+                </div>
+            </div>
+
+            <!-- Right: Details & OCR Form -->
+            <div class="claim-details-form">
+                <h2>Claim Review #<span id="modal-claim-id"></span></h2>
+                
+                <form id="approvalForm" method="post" action="">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label>Merchant (OCR Verified)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <input type="text" id="modal-merchant" name="merchant" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="modal-date" name="date" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Amount (HKD)</label>
+                            <input type="number" id="modal-amount" name="amount" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Reviewer Note</label>
+                        <textarea name="note" placeholder="Add a note (required for rejection)..."></textarea>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="submit" name="action" value="reject" class="btn btn-danger-outline">Reject</button>
+                        <button type="submit" name="action" value="approve" class="btn btn-success">Approve</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function filterClaims(category) {
+        const cards = document.querySelectorAll('.claim-card');
+        cards.forEach(card => {
+            if (category === 'all' || card.dataset.category === category) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    function openClaimModal(claimId) {
+        // In a real implementation, fetch details via AJAX
+        // For MVP, we'll mock populating the fields based on the ID or data attributes
+        
+        const modal = document.getElementById('claimModal');
+        const form = document.getElementById('approvalForm');
+        
+        // Update Action URL
+        // Currently hardcoded pattern, but should be dynamic
+        form.action = `/portal/approval/action/${claimId}/PLACEHOLDER/`.replace('PLACEHOLDER', ''); 
+        
+        // Mock Data Population - Replace with fetch call
+        document.getElementById('modal-claim-id').textContent = claimId;
+        document.getElementById('modal-merchant').value = "Uber Technologies";
+        document.getElementById('modal-amount').value = "500.00";
+        document.getElementById('modal-date').value = new Date().toISOString().split('T')[0];
+
+        // Hack for form action handling with single URL structure
+        // The view expects /action/ID/TYPE/
+        // We'll use JS to intercept submit
+        form.onsubmit = function(e) {
+            e.preventDefault();
+            const action = e.submitter.value; // 'approve' or 'reject'
+            const url = `/portal/approval/action/${claimId}/${action}/`;
+            this.action = url;
+            this.submit();
+        };
+
+        modal.classList.remove('hidden');
+    }
+
+    function closeClaimModal() {
+        document.getElementById('claimModal').classList.add('hidden');
+    }
+
+    // Close on outside click
+    window.onclick = function(event) {
+        const modal = document.getElementById('claimModal');
+        if (event.target == modal) {
+            closeClaimModal();
+        }
+    }
+</script>
 {% endblock %}

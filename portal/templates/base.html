@@ -4,10 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Finsight{% endblock %}</title>
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Base CSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'portal/css/base.css' %}">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    {% block content %}{% endblock %}
+    <header class="header">
+        <div class="logo">FinSight</div>
+        <nav class="nav-links">
+            <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="{% url 'approval' %}" class="{% if request.resolver_match.url_name == 'approval' %}active{% endif %}">
+                <i class="fas fa-check-circle"></i> Approvals
+            </a>
+            <a href="{% url 'chatbot' %}" class="{% if request.resolver_match.url_name == 'chatbot' %}active{% endif %}">
+                <i class="fas fa-robot"></i> Reports & Chat
+            </a>
+        </nav>
+        <div class="user-controls">
+            <span class="user-name">Welcome, {{ user.username }}</span>
+            <button class="logout-btn" onclick="location.href='{% url 'login' %}'">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Modals -->
+    {% block modals %}{% endblock %}
+
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

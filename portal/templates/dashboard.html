@@ -8,152 +8,155 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <!-- Sidebar -->
-    <nav class="sidebar">
-        <div class="menu-item active">
-            <i class="fas fa-home"></i> <span>Overview</span>
-        </div>
-        <div class="menu-item">
-            <i class="fas fa-file-alt"></i> <span>Reports</span>
-        </div>
-        <div class="menu-item">
-            <i class="fas fa-check-circle"></i> <span>Approvals</span>
-        </div>
-        <div class="menu-item">
-            <i class="fas fa-cog"></i> <span>Analytics</span>
-        </div>
-        <div class="menu-item">
-            <i class="fas fa-robot"></i> <span>Company Helper</span>
-        </div>
-        <div class="menu-item">
-            <i class="fas fa-cog"></i> <span>Settings</span>
-        </div>
-    </nav>
+<div class="dashboard-header">
+    <h1 class="page-title">Financial Overview</h1>
+    <div class="date-display">{{ current_date|date:"l, F j, Y" }}</div>
+</div>
 
-    <!-- Middle Section -->
-    <div class="middle-section">
-        <!-- Top Bar -->
-        <header class="top-bar">
-            <h1>Finsight</h1>
-        </header>
+<!-- Alerts Section -->
+<section class="alerts-section">
+    {% for alert in alerts %}
+    <div class="alert-card {{ alert.level }}">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>{{ alert.message }}</span>
+    </div>
+    {% endfor %}
+</section>
 
-        <!-- Dashboard Cards -->
-        <section class="dashboard-cards">
-            <div class="card large">
-                <h2>
-                    Total Assets <span class="percentage">5.12%</span>
-                </h2>
-                <p>USD 50,000.00</p>
-                <div class="sub-info">
-                    <span>↑ Revenue USD 75,000.00</span>
-                    <span>↓ Expenses USD 25,000</span>
-                </div>
-            </div>
-            <div class="card large">
-                <h2>
-                    Net Profit <span class="percentage">5.12%</span>
-                </h2>
-                <p>USD 25,000.00</p>
-            </div>
-        </section>
-
-        <!-- Insight Photo -->
-        <div class="insight-photo-container">
-            <img src="{% static 'portal/images/insight-photo.png' %}" alt="Insight Photo" class="insight-photo" />
+<!-- Key Metrics Grid -->
+<section class="metrics-grid">
+    <div class="metric-card card">
+        <div class="metric-icon budget-icon">
+            <i class="fas fa-wallet"></i>
         </div>
-
-        <!-- Bottom Section -->
-        <footer class="bottom">
-            <div class="goals-card pink">
-                <h3>
-                    Goals Annual Growth <i class="fas fa-chevron-right"></i>
-                </h3>
-                <div class="progress-section">
-                    <div class="goals-content">
-                        <i class="fas fa-file-alt"></i>
-                        <div class="goals-text">
-                            <p>75% of targets</p>
-                            <div class="progress-bar">
-                                <div class="progress" style="width: 75%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="goals-bottom">
-                    <p>$15,000 out of $20,000</p>
-                </div>
-            </div>
-            <div class="financial-overview pink">
-                <h3>Financial Overview</h3>
-                <div class="bar-segments">
-                    <div class="segment">
-                        <span>59% Operation</span>
-                        <div class="progress-bar">
-                            <div class="progress operation" style="width: 59%"></div>
-                        </div>
-                    </div>
-                    <div class="segment">
-                        <span>10% Budget</span>
-                        <div class="progress-bar">
-                            <div class="progress budget" style="width: 10%"></div>
-                        </div>
-                    </div>
-                    <div class="segment">
-                        <span>3% Investment</span>
-                        <div class="progress-bar">
-                            <div class="progress investment" style="width: 3%"></div>
-                        </div>
-                    </div>
-                    <div class="segment">
-                        <span>2% Marketing</span>
-                        <div class="progress-bar">
-                            <div class="progress marketing" style="width: 2%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </footer>
+        <div class="metric-info">
+            <h3>Total Budget</h3>
+            <p class="metric-value">HKD {{ total_budget|floatformat:0 }}</p>
+            <span class="metric-trend trend-positive">Annual Allocation</span>
+        </div>
+    </div>
+    
+    <div class="metric-card card">
+        <div class="metric-icon spend-icon">
+            <i class="fas fa-receipt"></i>
+        </div>
+        <div class="metric-info">
+            <h3>Total Spend</h3>
+            <p class="metric-value">HKD {{ total_spend|floatformat:0 }}</p>
+            <span class="metric-trend">{{ utilization_rate|floatformat:1 }}% Utilized</span>
+        </div>
     </div>
 
-    <!-- Right Section - Reports -->
-    <div class="right-section">
-        <section class="reports big-box">
-            <div class="reports-header">
-                <h2>Reports</h2>
-                <button>Generate</button>
-            </div>
-            <div class="tabs">
-                <button class="tab active">Overall</button>
-                <button class="tab">Monthly</button>
-                <button class="tab">Quarter</button>
-            </div>
-            <div class="report-cards">
-                <div class="report-card">
-                    <i class="fas fa-bars"></i>
-                    <span class="text">Requests Approval</span>
+    <div class="metric-card card">
+        <div class="metric-icon remaining-icon">
+            <i class="fas fa-piggy-bank"></i>
+        </div>
+        <div class="metric-info">
+            <h3>Remaining</h3>
+            <p class="metric-value">HKD {{ remaining_budget|floatformat:0 }}</p>
+            <span class="metric-trend {% if remaining_budget < 10000 %}trend-negative{% else %}trend-positive{% endif %}">Available Funds</span>
+        </div>
+    </div>
+
+    <div class="metric-card card" onclick="location.href='{% url 'approval' %}'" style="cursor: pointer;">
+        <div class="metric-icon pending-icon">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="metric-info">
+            <h3>Pending Claims</h3>
+            <p class="metric-value">{{ pending_count }}</p>
+            <span class="metric-trend trend-warning">Requires Action</span>
+        </div>
+    </div>
+</section>
+
+<!-- Charts & Activity -->
+<div class="dashboard-split">
+    <!-- Chart Section -->
+    <div class="chart-container card">
+        <div class="card-header">
+            <h2>Spending Trends (YTD)</h2>
+            <select class="chart-filter">
+                <option>All Categories</option>
+                <option>Travel</option>
+                <option>Meals</option>
+            </select>
+        </div>
+        <div class="chart-wrapper">
+            <canvas id="spendChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="activity-feed card">
+        <div class="card-header">
+            <h2>Recent Activity</h2>
+            <a href="{% url 'approval' %}" class="view-all">View All</a>
+        </div>
+        <ul class="activity-list">
+            {% for event in recent_activity %}
+            <li class="activity-item">
+                <div class="activity-icon {{ event.type }}">
+                    {% if event.type == 'claim' %}<i class="fas fa-file-invoice-dollar"></i>
+                    {% elif event.type == 'approval' %}<i class="fas fa-check"></i>
+                    {% else %}<i class="fas fa-info"></i>{% endif %}
                 </div>
-                <div class="report-card">
-                    <i class="fas fa-bars"></i>
-                    <span class="text">Manage Approvals</span>
+                <div class="activity-details">
+                    <p class="activity-text">{{ event.text }}</p>
+                    <span class="activity-time">{{ event.time|timesince }} ago</span>
                 </div>
-                <div class="report-card">
-                    <i class="fas fa-bars"></i>
-                    <span class="text">Finsight Dashboard Expenses Overview Profit</span>
-                    <span class="value neutral"></span>
-                </div>
-                <div class="report-card">
-                    <i class="fas fa-chart-bar"></i>
-                    <span class="text">Quick Insights Admin User Projected</span>
-                    <span class="value neutral"></span>
-                </div>
-                <div class="report-card">
-                    <i class="fas fa-dollar-sign"></i>
-                    <span class="text">Total Expenses Monthly Reports</span>
-                </div>
-                <!-- Add more cards as needed -->
-            </div>
-        </section>
+            </li>
+            {% empty %}
+            <li class="activity-item">No recent activity</li>
+            {% endfor %}
+        </ul>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const ctx = document.getElementById('spendChart').getContext('2d');
+    
+    // Parse the JSON data passed from view
+    const chartLabels = JSON.parse('{{ chart_labels|safe }}');
+    const chartData = JSON.parse('{{ chart_data|safe }}');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: chartLabels,
+            datasets: [{
+                label: 'Monthly Spend (HKD)',
+                data: chartData,
+                backgroundColor: 'rgba(99, 102, 241, 0.5)', // Indigo-500
+                borderColor: 'rgba(99, 102, 241, 1)',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#f3f4f6'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+</script>
 {% endblock %}
