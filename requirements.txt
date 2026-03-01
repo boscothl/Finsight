@@ -8,3 +8,7 @@ google-cloud-storage==2.13.0
 djangorestframework
 google-cloud-documentai
 google-cloud-vision
+python-pptx
+python-docx
+Pillow
+google-cloud-aiplatform

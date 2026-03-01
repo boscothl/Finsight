@@ -69,7 +69,7 @@ ReportTemplate: id, name, type, config_json, created_by, created_at
 
 4. SYSTEM ARCHITECTURE
 - React Native iOS app
-- React Web Admin
+- Django Web 
 - Cloud Run backend
 - Cloud SQL database
 - Cloud Storage
