@@ -1,14 +1,159 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Finsight</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'portal/css/style.css' %}">
-</head>
-<body>
-    <h1>Admin Dashboard</h1>
-    <!-- Paste your HTML here -->
-</body>
-</html>
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Finsight{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'portal/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="menu-item active">
+            <i class="fas fa-home"></i> <span>Overview</span>
+        </div>
+        <div class="menu-item">
+            <i class="fas fa-file-alt"></i> <span>Reports</span>
+        </div>
+        <div class="menu-item">
+            <i class="fas fa-check-circle"></i> <span>Approvals</span>
+        </div>
+        <div class="menu-item">
+            <i class="fas fa-cog"></i> <span>Analytics</span>
+        </div>
+        <div class="menu-item">
+            <i class="fas fa-robot"></i> <span>Company Helper</span>
+        </div>
+        <div class="menu-item">
+            <i class="fas fa-cog"></i> <span>Settings</span>
+        </div>
+    </nav>
+
+    <!-- Middle Section -->
+    <div class="middle-section">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <h1>Finsight</h1>
+        </header>
+
+        <!-- Dashboard Cards -->
+        <section class="dashboard-cards">
+            <div class="card large">
+                <h2>
+                    Total Assets <span class="percentage">5.12%</span>
+                </h2>
+                <p>USD 50,000.00</p>
+                <div class="sub-info">
+                    <span>↑ Revenue USD 75,000.00</span>
+                    <span>↓ Expenses USD 25,000</span>
+                </div>
+            </div>
+            <div class="card large">
+                <h2>
+                    Net Profit <span class="percentage">5.12%</span>
+                </h2>
+                <p>USD 25,000.00</p>
+            </div>
+        </section>
+
+        <!-- Insight Photo -->
+        <div class="insight-photo-container">
+            <img src="{% static 'portal/images/insight-photo.png' %}" alt="Insight Photo" class="insight-photo" />
+        </div>
+
+        <!-- Bottom Section -->
+        <footer class="bottom">
+            <div class="goals-card pink">
+                <h3>
+                    Goals Annual Growth <i class="fas fa-chevron-right"></i>
+                </h3>
+                <div class="progress-section">
+                    <div class="goals-content">
+                        <i class="fas fa-file-alt"></i>
+                        <div class="goals-text">
+                            <p>75% of targets</p>
+                            <div class="progress-bar">
+                                <div class="progress" style="width: 75%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="goals-bottom">
+                    <p>$15,000 out of $20,000</p>
+                </div>
+            </div>
+            <div class="financial-overview pink">
+                <h3>Financial Overview</h3>
+                <div class="bar-segments">
+                    <div class="segment">
+                        <span>59% Operation</span>
+                        <div class="progress-bar">
+                            <div class="progress operation" style="width: 59%"></div>
+                        </div>
+                    </div>
+                    <div class="segment">
+                        <span>10% Budget</span>
+                        <div class="progress-bar">
+                            <div class="progress budget" style="width: 10%"></div>
+                        </div>
+                    </div>
+                    <div class="segment">
+                        <span>3% Investment</span>
+                        <div class="progress-bar">
+                            <div class="progress investment" style="width: 3%"></div>
+                        </div>
+                    </div>
+                    <div class="segment">
+                        <span>2% Marketing</span>
+                        <div class="progress-bar">
+                            <div class="progress marketing" style="width: 2%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Right Section - Reports -->
+    <div class="right-section">
+        <section class="reports big-box">
+            <div class="reports-header">
+                <h2>Reports</h2>
+                <button>Generate</button>
+            </div>
+            <div class="tabs">
+                <button class="tab active">Overall</button>
+                <button class="tab">Monthly</button>
+                <button class="tab">Quarter</button>
+            </div>
+            <div class="report-cards">
+                <div class="report-card">
+                    <i class="fas fa-bars"></i>
+                    <span class="text">Requests Approval</span>
+                </div>
+                <div class="report-card">
+                    <i class="fas fa-bars"></i>
+                    <span class="text">Manage Approvals</span>
+                </div>
+                <div class="report-card">
+                    <i class="fas fa-bars"></i>
+                    <span class="text">Finsight Dashboard Expenses Overview Profit</span>
+                    <span class="value neutral"></span>
+                </div>
+                <div class="report-card">
+                    <i class="fas fa-chart-bar"></i>
+                    <span class="text">Quick Insights Admin User Projected</span>
+                    <span class="value neutral"></span>
+                </div>
+                <div class="report-card">
+                    <i class="fas fa-dollar-sign"></i>
+                    <span class="text">Total Expenses Monthly Reports</span>
+                </div>
+                <!-- Add more cards as needed -->
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

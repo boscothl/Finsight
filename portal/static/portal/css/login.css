@@ -1,0 +1,190 @@
+:global(*) {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:global(body) {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: url('../images/loginpage-bg.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.form-box {
+    background: white;
+    padding: 40px 50px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+}
+
+/* Progress Indicators */
+.progress-container {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+    position: relative;
+    align-items: center;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 3px;
+    background-color: #e0e0e0;
+    border-radius: 2px;
+    transition: background-color 0.3s ease;
+}
+
+.progress-bar.active {
+    background-color: #666;
+}
+
+.skip-link {
+    display: block;
+    text-align: right;
+    color: #999;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 25px;
+    transition: color 0.2s ease;
+}
+
+.skip-link:hover {
+    color: #666;
+}
+
+/* Heading */
+.heading {
+    font-size: 28px;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* Profile Icon Container */
+.profile-icon-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 35px;
+}
+
+.profile-icon {
+    width: 120px;
+    height: 120px;
+    background-color: #d3d3d3;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-icon i {
+    font-size: 48px;
+    color: #666;
+}
+
+.add-button {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 36px;
+    height: 36px;
+    background-color: #9f7b4e;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.2s ease;
+    box-shadow: 0 2px 8px rgba(159, 123, 78, 0.3);
+}
+
+.add-button:hover {
+    background-color: #8a6a43;
+}
+
+.add-button:active {
+    transform: scale(0.95);
+}
+
+/* Form Groups */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: border-color 0.2s ease;
+    background-color: #fafafa;
+}
+
+/* Buttons */
+.button-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 35px;
+}
+
+.btn-back {
+    padding: 12px 24px;
+    background-color: transparent;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    color: #666;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-back:hover {
+    background-color: #f5f5f5;
+}
+
+.btn-continue {
+    padding: 12px 32px;
+    background-color: #9f7b4e;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(159, 123, 78, 0.3);
+    transition: background-color 0.2s ease;
+}
+
+.btn-continue:hover {
+    background-color: #8a6a43;
+}

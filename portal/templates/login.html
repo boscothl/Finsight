@@ -1,14 +1,63 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Finsight</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'portal/css/style.css' %}">
-</head>
-<body>
-    <h1>Login Page</h1>
-    <!-- Paste your HTML here -->
-</body>
-</html>
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login - Finsight{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'portal/css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-box">
+        <!-- Progress Indicators -->
+        <div class="progress-container">
+            <div class="progress-bar"></div>
+            <div class="progress-bar"></div>
+            <div class="progress-bar"></div>
+            <div class="progress-bar active"></div>
+        </div>
+        <a href="#" class="skip-link">Skip</a>
+
+        <!-- Heading -->
+        <h1 class="heading">Set up your profile</h1>
+
+        <!-- Profile Icon with Add Button -->
+        <div class="profile-icon-container">
+            <div class="profile-icon">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <button class="add-button">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 3 V13 M3 8 H13" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+            </button>
+        </div>
+
+        <form method="post" action="{% url 'login' %}"> <!-- Added form tag for Django -->
+            {% csrf_token %}
+            <!-- Form Fields -->
+            <div class="form-group">
+                <label htmlFor="company-name">Company Name</label>
+                <input type="text" id="company-name" name="company_name" placeholder="Your Company Name" />
+            </div>
+
+            <div class="form-group">
+                <label htmlFor="username">Admin Username</label>
+                <input type="text" id="username" name="username" placeholder="Create a username" required/>
+            </div>
+
+            <div class="form-group">
+                <label htmlFor="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Password" required/>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="button-container">
+                <button type="button" class="btn-back">Back</button>
+                <button type="submit" class="btn-continue">Continue</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

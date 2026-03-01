@@ -1,0 +1,286 @@
+:global(*)  {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body  {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: #333;
+    background-color: #fff;
+    margin: 0;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    background-color: #fff;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.logo {
+    font-size: 28px;
+    font-weight: bold;
+    color: #222;
+}
+
+.nav-links {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #555;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    background-color: #e8dfd5;
+    color: #222;
+}
+
+.logout-btn {
+    background-color: #9f7b4e;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.logout-btn:hover {
+    background-color: #8a6a43;
+}
+
+/* Main Container */
+.main-container {
+    display: flex;
+    min-height: calc(100vh - 81px);
+}
+
+/* Left Section */
+.left-section {
+    flex: 0 0 75%;
+    padding: 30px 40px;
+}
+
+/* Right Section */
+.right-section {
+    flex: 0 0 25%;
+    padding: 30px 25px;
+    border-left: 1px solid #e0e0e0;
+}
+
+/* Section Title */
+.section-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #222;
+}
+
+/* Pending Approvals Section */
+.pending-approvals {
+    background-color: #e8dfd5;
+    padding: 25px;
+    margin-bottom: 30px;
+    border-radius: 8px;
+}
+
+.approval-card {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.approval-card:last-child {
+    margin-bottom: 0;
+}
+
+.approval-info h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #222;
+}
+
+.approval-info p {
+    font-size: 14px;
+    color: #666;
+}
+
+.approval-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-approve {
+    background-color: #9f7b4e;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-approve:hover {
+    background-color: #8a6a43;
+}
+
+.btn-decline {
+    background-color: #e6e6e6;
+    color: #333;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-decline:hover {
+    background-color: #d4d4d4;
+}
+
+/* Approval Requests Section */
+.approval-requests {
+    background-color: white;
+    padding: 0;
+    margin-bottom: 30px;
+}
+
+.requests-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.requests-table th,
+.requests-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.requests-table th {
+    color: #777;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.requests-table td {
+    color: #333;
+    font-size: 15px;
+}
+
+.status-pending {
+    color: #e6b800;
+    font-weight: 600;
+}
+
+.status-approved {
+    color: #4caf50;
+    font-weight: 600;
+}
+
+.status-rejected {
+    color: #f44336;
+    font-weight: 600;
+}
+
+
+/* Funding Pools Overview Section */
+.funding-pools {
+    background-color: white;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.btn-create-pool {
+    background-color: #333;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.pool-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.pool-name {
+    width: 25%;
+    font-weight: 500;
+    color: #333;
+    font-size: 15px;
+}
+
+.pool-progress-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 0 20px;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 8px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 4px;
+}
+
+.pool-percentage {
+    width: 40px;
+    text-align: right;
+    font-size: 14px;
+    color: #666;
+}
+
+.pool-cap {
+    width: 15%;
+    text-align: right;
+    font-weight: 600;
+    color: #333;
+    font-size: 15px;
+}
+
+.blue { background-color: #3b82f6; }
+.green { background-color: #10b981; }
+.orange { background-color: #f59e0b; }
+.purple { background-color: #8b5cf6; }
