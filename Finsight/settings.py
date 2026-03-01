@@ -15,11 +15,10 @@ import os
 import environ
 
 env = environ.Env()
-environ.Env.read_env()
-
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+# Read .env file from the project root (where manage.py is)
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
