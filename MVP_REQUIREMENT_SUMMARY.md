@@ -55,17 +55,21 @@ This project delivers a cross‑platform React Native iOS app for employees and 
 - Cloud Storage (images)
 - Google Document AI
 - Vertex AI for chatbots
-- PPTX/DOCX generation service
+- PPTX/DOCX/XLSX generation service
 
 3. DATA MODEL
 
-User: id, email, password_hash, role, name, created_at
-BudgetPool: id, name, start_date, end_date, total_budget_hkd, remaining_hkd, created_at
+Company: id, name, created_at
+User: id, company_id, email, password_hash, role, name, created_at
+BudgetPool: id, company_id, name, start_date, end_date, total_budget_hkd, remaining_hkd, created_at
 Claim: id, user_id, budget_pool_id, status, amount_hkd, merchant, date, category, note, created_at, updated_at
 ReceiptFile: id, claim_id, url, ocr_json, ocr_confidence
 Approval: id, claim_id, approver_id, decision, comment, decided_at
-PolicyDoc: id, title, version, url, created_at
-ReportTemplate: id, name, type, config_json, created_by, created_at
+PolicyDoc: id, company_id, title, version, url, content_text, created_at
+ReportTemplate: id, company_id, name, type, config_json, created_by, created_at
+GeneratedReport: id, template_id, user_id, file_url, created_at
+ChatSession: id, user_id, context, created_at
+ChatMessage: id, session_id, role, content, timestamp
 
 4. SYSTEM ARCHITECTURE
 - React Native iOS app

@@ -1,6 +1,6 @@
 Django>=4.2
-gunicorn==21.2.0
-psycopg2-binary==2.9.9
+# gunicorn==21.2.0
+# psycopg2-binary==2.9.9
 django-environ==0.11.2
 whitenoise==6.7.0
 django-storages==1.14.2
@@ -12,3 +12,4 @@ python-pptx
 python-docx
 Pillow
 google-cloud-aiplatform
+vertexai
