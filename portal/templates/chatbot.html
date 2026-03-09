@@ -62,7 +62,7 @@
                             <option value="creative">Creative Marketing Theme</option>
                         </select>
                         <button type="button" class="btn btn-outline" onclick="openStyleManager()">
-                            <i class="fas fa-paint-brush"></i> Manage Styles
+                            <i class="fas fa-paint-brush"></i> Add Styles
                         </button>
                     </div>
                 </div>
@@ -125,26 +125,19 @@
             <button class="btn-icon" onclick="closeStyleManager()"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
-            <div class="upload-dropzone">
+            <div class="upload-dropzone" id="styleUploadDropzone" onclick="document.getElementById('styleFileInput').click()">
                 <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
-                <p><strong>Upload a PDF or Image</strong></p>
+                <p><strong>Click to Upload a PDF or Image</strong></p>
                 <p style="font-size: 0.85rem; color: var(--text-secondary);">AI will extract styles (Colors, Fonts, Layouts) from the file.</p>
+                <input type="file" id="styleFileInput" style="display: none;" accept="image/*,application/pdf" onchange="handleFileSelect(event)">
             </div>
             
-            <h3 style="font-size: 1rem; margin-bottom: 0.5rem;">Existing Styles (AI Extracted)</h3>
-            <div class="style-list">
-                <div class="style-item selected">
-                    <strong>Corporate Standard Theme</strong>
-                    <div style="margin-top: 0.5rem; margin-bottom: 0.5rem;">
-                        <textarea class="form-control" rows="2" style="font-size: 0.85rem;">Uses dark navy headers (#000080), standard Arial size 12 font, light grey alternate rows.</textarea>
-                    </div>
-                    <button class="btn btn-sm btn-outline">Update Description</button>
-                </div>
-                <div class="style-item">
-                    <strong>Creative Marketing Theme</strong>
-                    <p>Bright orange headers (#FFA500), bold Open Sans size 14 fonts, no borders.</p>
-                </div>
-            </div>
+            <div id="selectedFileName" style="text-align: center; margin-bottom: 1rem; font-size: 0.9rem; color: var(--primary-color); font-weight: bold;"></div>
+            
+            <button type="button" class="btn-generate" id="extractStyleBtn" style="margin-top: 0; margin-bottom: 1.5rem; display: none;" onclick="simulateStyleExtraction()">
+                <i class="fas fa-magic"></i> Extract Style with AI
+            </button>
+            
         </div>
     </div>
 </div>
@@ -267,6 +260,60 @@
     function generateSimpleReport() {
         alert("Simple Report Generation pipeline triggered via Django.");
         window.location.href = "{% url 'reports' %}";
+    }
+
+    // --- Style Manager Upload Flow ---
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (file) {
+            document.getElementById('selectedFileName').textContent = `Selected File: ${file.name}`;
+            document.getElementById('extractStyleBtn').style.display = 'block';
+        }
+    }
+
+    function simulateStyleExtraction() {
+        const btn = document.getElementById('extractStyleBtn');
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Extracting Style using AI...';
+        btn.disabled = true;
+
+        // Simulate API call delay
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fas fa-magic"></i> Extract Style with AI';
+            btn.disabled = false;
+            btn.style.display = 'none';
+            document.getElementById('selectedFileName').textContent = '';
+            document.getElementById('styleFileInput').value = '';
+
+            const styleList = document.getElementById('styleListContainer');
+            
+            // Unselect all existing styles
+            document.querySelectorAll('.style-list .style-item').forEach(item => item.classList.remove('selected'));
+
+            // Create new extracted style listing
+            const newItem = document.createElement('div');
+            newItem.className = 'style-item selected';
+            newItem.setAttribute('onclick', 'selectStyle(this)');
+            newItem.innerHTML = `
+                <strong>AI Extracted Theme (New)</strong>
+                <p>Extracted from uploaded document. Primary color #2A9D8F, Inter font, minimal layout.</p>
+            `;
+            
+            styleList.prepend(newItem);
+            
+            // Add to the main dropdown selector
+            const selectDropdown = document.getElementById('referenceStyleSelect');
+            const newOption = document.createElement('option');
+            newOption.value = 'ai_extracted';
+            newOption.text = 'AI Extracted Theme (New)';
+            newOption.selected = true;
+            selectDropdown.add(newOption, 1);
+            
+        }, 2000);
+    }
+
+    function selectStyle(element) {
+        document.querySelectorAll('.style-list .style-item').forEach(item => item.classList.remove('selected'));
+        element.classList.add('selected');
     }
 </script>
 {% endblock %}

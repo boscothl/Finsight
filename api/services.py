@@ -44,6 +44,7 @@ class StyleExtractorService:
         4. Text Color (hex code)
         5. Primary Font (guess the closest standard font like Arial, Calibri, Times New Roman, etc.)
         6. Title Layout (e.g., Centered, Left-Aligned)
+        7. Detailed description of the styling (VERY IMPORTANT)
         
         Respond STRICTLY in pure JSON format:
         {
