@@ -20,7 +20,7 @@ COPY . /app/
 EXPOSE 8080
 
 # Automatically run database migrations, collect static, and start gunicorn
-CMD python manage.py migrate && \
-    python manage.py collectstatic --noinput && \
-    gunicorn --bind 0.0.0.0:${PORT:-8080} --workers 1 --threads 8 --timeout 0 Finsight.wsgi:application
+# CMD python manage.py migrate && \
+#     python manage.py collectstatic --noinput && \
+CMD gunicorn --bind 0.0.0.0:${PORT:-8080} --workers 1 --threads 8 --timeout 0 Finsight.wsgi:application
 
