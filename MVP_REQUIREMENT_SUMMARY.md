@@ -66,10 +66,13 @@ Claim: id, user_id, budget_pool_id, status, amount_hkd, merchant, date, category
 ReceiptFile: id, claim_id, url, ocr_json, ocr_confidence
 Approval: id, claim_id, approver_id, decision, comment, decided_at
 PolicyDoc: id, company_id, title, version, url, content_text, created_at
-ReportTemplate: id, company_id, name, type, config_json, created_by, created_at
+ReportTemplate: id, company_id, name, format, data_filters_json, config_json, created_by, created_at
 GeneratedReport: id, template_id, user_id, file_url, created_at
 ChatSession: id, user_id, context, created_at
 ChatMessage: id, session_id, role, content, timestamp
+GLAccount: id, company_id, name, code, account_type
+GLTransaction: id, company_id, date, description, claim_id, created_at
+GLTransactionLine: id, transaction_id, account_id, debit, credit
 
 4. SYSTEM ARCHITECTURE
 - React Native iOS app

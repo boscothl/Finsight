@@ -90,7 +90,8 @@ class PolicyDoc(models.Model):
 class ReportTemplate(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, null=True, blank=True, related_name='templates')
     name = models.CharField(max_length=255)
-    type = models.CharField(max_length=50) # 'pptx' or 'docx'
+    format = models.CharField(max_length=50) # 'pptx', 'docx', 'xlsx'
+    data_filters_json = models.JSONField(null=True, blank=True)
     config_json = models.JSONField()
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -123,3 +124,38 @@ class ChatMessage(models.Model):
 
     def __str__(self):
         return f"Message {self.id} by {self.role}"
+
+class GLAccount(models.Model):
+    ACCOUNT_TYPES = (
+        ('asset', 'Asset'),
+        ('liability', 'Liability'),
+        ('equity', 'Equity'),
+        ('revenue', 'Revenue'),
+        ('expense', 'Expense'),
+    )
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='gl_accounts')
+    name = models.CharField(max_length=255)
+    code = models.CharField(max_length=50) # e.g., "1000", "5000"
+    account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPES)
+
+    def __str__(self):
+        return f"[{self.code}] {self.name}"
+
+class GLTransaction(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='gl_transactions')
+    date = models.DateField()
+    description = models.CharField(max_length=255)
+    claim = models.ForeignKey(Claim, on_delete=models.SET_NULL, null=True, blank=True, related_name='gl_transactions')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Txn #{self.id} on {self.date}"
+
+class GLTransactionLine(models.Model):
+    transaction = models.ForeignKey(GLTransaction, on_delete=models.CASCADE, related_name='lines')
+    account = models.ForeignKey(GLAccount, on_delete=models.PROTECT, related_name='ledger_lines')
+    debit = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    credit = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    def __str__(self):
+        return f"Line for Txn {self.transaction_id} - {self.account.name}"
