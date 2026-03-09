@@ -16,9 +16,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project
 COPY . /app/
 
-# Expose port
+# Expose port (Cloud Run defaults to 8080)
 EXPOSE 8080
 
-# Run gunicorn
-# Replace 'Finsight.wsgi:application' with your project name if different
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "Finsight.wsgi:application"]
+# Automatically run database migrations, collect static, and start gunicorn
+CMD python manage.py migrate && \
+    python manage.py collectstatic --noinput && \
+    gunicorn --bind 0.0.0.0:${PORT:-8080} --workers 1 --threads 8 --timeout 0 Finsight.wsgi:application
+
