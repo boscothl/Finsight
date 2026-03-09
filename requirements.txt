@@ -10,6 +10,7 @@ google-cloud-documentai
 google-cloud-vision
 python-pptx
 python-docx
+openpyxl
 Pillow
 google-cloud-aiplatform
 vertexai

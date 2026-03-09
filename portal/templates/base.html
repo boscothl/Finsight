@@ -26,7 +26,10 @@
                 <i class="fas fa-check-circle"></i> Approvals
             </a>
             <a href="{% url 'chatbot' %}" class="{% if request.resolver_match.url_name == 'chatbot' %}active{% endif %}">
-                <i class="fas fa-robot"></i> Reports & Chat
+                <i class="fas fa-robot"></i> Report Builder
+            </a>
+            <a href="{% url 'reports' %}" class="{% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
+                <i class="fas fa-folder-open"></i> Reports Library
             </a>
         </nav>
         <div class="user-controls">

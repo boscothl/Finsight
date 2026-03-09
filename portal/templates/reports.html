@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reports Library - Finsight{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'portal/css/reports.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="reports-container">
+    <div class="reports-header">
+        <h1>Reports Library</h1>
+        <button class="btn btn-primary" onclick="location.href='{% url 'chatbot' %}'">
+            <i class="fas fa-magic"></i> Generate New
+        </button>
+    </div>
+
+    <div class="reports-grid">
+        <!-- Placeholder Report Cards -->
+        <div class="report-card">
+            <div class="report-icon excel">
+                <i class="fas fa-file-excel"></i>
+            </div>
+            <div class="report-details">
+                <h3>Q3 Financial Summary</h3>
+                <p>Generated: Today, 10:30 AM</p>
+                <p>Format: .xlsx</p>
+            </div>
+            <div class="report-actions">
+                <button class="btn btn-sm btn-outline"><i class="fas fa-download"></i> Download</button>
+                <button class="btn btn-sm btn-outline"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>
+
+        <div class="report-card">
+            <div class="report-icon word">
+                <i class="fas fa-file-word"></i>
+            </div>
+            <div class="report-details">
+                <h3>Monthly Expense Brief</h3>
+                <p>Generated: Yesterday, 2:15 PM</p>
+                <p>Format: .docx</p>
+            </div>
+            <div class="report-actions">
+                <button class="btn btn-sm btn-outline"><i class="fas fa-download"></i> Download</button>
+                <button class="btn btn-sm btn-outline"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>
+
+        <div class="report-card">
+            <div class="report-icon powerpoint">
+                <i class="fas fa-file-powerpoint"></i>
+            </div>
+            <div class="report-details">
+                <h3>Board Meeting Deck</h3>
+                <p>Generated: Oct 24, 2023</p>
+                <p>Format: .pptx</p>
+            </div>
+            <div class="report-actions">
+                <button class="btn btn-sm btn-outline"><i class="fas fa-download"></i> Download</button>
+                <button class="btn btn-sm btn-outline"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

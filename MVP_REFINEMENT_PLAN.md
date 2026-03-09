@@ -10,7 +10,7 @@ This document outlines the refined feature specifications for the Finsight Admin
 
 ---
 
-## 2. Dashboard Page (`/portal/dashboard/`)
+## 2. Dashboard Page (`/dashboard/`)
 **Goal:** Provide an immediate high-level overview of financial health and actionable alerts.
 
 ### KEY Features
@@ -36,7 +36,7 @@ This document outlines the refined feature specifications for the Finsight Admin
 
 ---
 
-## 3. Approvals Page (`/portal/approval/`)
+## 3. Approvals Page (`/approval/`)
 **Goal:** Efficient processing of claims with deep inspection capabilities and audit trails.
 
 ### KEY Features
@@ -59,34 +59,40 @@ This document outlines the refined feature specifications for the Finsight Admin
 
 ---
 
-## 4. Report & Chatbot Page (`/portal/chatbot/`)
-**Goal:** distinct flows for creating new reports vs. reusing successful templates.
+## 4. Report Builder & Chatbot Page (`/chatbot/`)
+**Goal:** Provide two distinct modes for generating custom reports, ranging from quick standard forms to advanced AI-driven creation, supported by a secure "Two-Agent Pipeline."
 
-### Layout Reorganization (Two-Pane Layout)
-**Left Panel: Report Library**
-1.  **Saved Templates:**
-    *   List of previously generated/saved report configurations (e.g., "Monthly Inv Report - Corporate Style").
-    *   *Action:* "Load Template" button to populate the settings.
-2.  **Create New:**
-    *   Button to clear context and start fresh.
+### KEY Features
+1.  **Mode Switcher Component**
+    *   **Simple Mode:** A standard, intuitive web form capturing Time Period, Report Type, Format (.xlsx, .docx, .pptx), and Reference Style.
+    *   **Advance Mode:** A full-featured chat interface for iterative, natural language report requests and flexible data exploration.
+2.  **Style Manager Modal**
+    *   Allows users to upload a PDF or image of an existing document.
+    *   AI extracts the styling (Colors, Fonts, Layouts) and saves it as a reusable "Theme" (e.g., Corporate Standard Theme, Creative Marketing Theme).
+3.  **Chat Iteration & Style Saving**
+    *   In Advance Mode, when the bot responds with a generated report or a style mapping block, users can click "Save Extracted Style" to store the settings into the database directly from the chat.
+4.  **Secure "Two-Agent" Data Pipeline**
+    *   **Step 1 (Data Agent):** Parses the user's intent to identify required constraints, securely polling the Django database to return sanitized JSON payloads.
+    *   **Step 2 (Code Gen Agent):** Receives the user prompt and the JSON data array to safely assemble Python scripts (`openpyxl`, `python-docx`, `python-pptx`). This avoids arbitrary `exec()` vulnerabilities involving the database.
 
-**Right Panel: Generation Workspace**
-1.  **Interactive Chat Interface:**
-    *   Natural language input ("Create a summary for Q3 travel expenses").
-    *   Rich responses (files, preview charts).
-2.  **Context Configuration:**
-    *   Dropdowns for manual overrides (Date Range, Style) if not using Chat.
-3.  **Download Center:**
-    *   Persistent list of generated files available for download during the session.
+---
 
-### Data Requirements
-*   `ReportTemplate` Model: Stores `name`, `config_json`, `style_preference`.
-*   `ChatbotService`: Endpoint to handle "Generate" intent.
+## 5. Reports Library Page (`/reports/`)
+**Goal:** A centralized hub for managing, viewing, and organizing all historically generated or uploaded reports.
+
+### KEY Features
+1.  **Report Grid Layout**
+    *   Clean CSS-grid displaying recent documents (Excel, Word, PowerPoint) using file-type icons.
+2.  **File Management System**
+    *   Quick "Download" options for previously generated outputs.
+    *   Display of key metadata (Date, format, type, and source).
 
 ---
 
 ## Next Implementation Steps
-1.  **Refactor Base Template:** Move navigation to `base.html` and standardise CSS.
+1.  **Refactor Base Template:** Move navigation to `base.html` and standardise CSS. *(Completed)*
 2.  **Update Dashboard View:** Compute alerts and fetch chart data.
 3.  **Enhance Approval View:** Add Modal logic and History queryset.
-4.  **Refactor Chatbot Template:** Implement split layout for Templates vs Chat.
+4.  **Refactor Chatbot Template (`/chatbot/`):** Implement Mode Switcher (Simple vs Advance) and Style Manager modal. *(Completed)*
+5.  **Build Reports Page (`/reports/`):** Construct the viewing hub. *(Completed)*
+6.  **Wire up the Two-Agent Pipeline:** Implement the backend logic mapping to the new pipeline architecture.

@@ -78,6 +78,10 @@ def chatbot_view(request):
     return render(request, 'chatbot.html')
 
 @login_required(login_url='login')
+def reports_view(request):
+    return render(request, 'reports.html')
+
+@login_required(login_url='login')
 def approval_view(request):
     pending_claims = Claim.objects.filter(status='pending').order_by('-created_at')
     history_claims = Claim.objects.exclude(status='pending').order_by('-updated_at')[:10]
