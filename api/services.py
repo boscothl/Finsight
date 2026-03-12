@@ -268,16 +268,17 @@ class ReportGenerationService:
         REQUIREMENTS:
         - Library to use: {required_library}
         - Required imports: MUST include '{required_import}' at the top of the file!
-        - Output File Name: {file_name_output}
+        - Output File Name: MUST use the exact string '{file_name_output}' when saving.
         - User Request: {user_prompt}
         - Derived Title: {intent_data.get('report_title_derived')}
         - Style Requirements: {style_injection}
-        
+
         DATA PAYLOAD:
         {report_context}
-        
+
         CRITICAL RULES:
         - Parse the DATA PAYLOAD JSON string directly inside your python code to populate the tables/charts.
+        - You MUST end your script by saving the file exactly to '{file_name_output}'. Do NOT give it a different name. Do NOT place it in a subfolder. Example: `prs.save('{file_name_output}')`
         - Do NOT import os, sys, or subprocess. Only use safe formatting libraries.
         - Do NOT provide markdown explanation. ONLY output raw Python code wrapped in ```python ... ```
         """
@@ -296,7 +297,12 @@ class ReportGenerationService:
             exec(generated_code, exec_namespace)
         except Exception as e:
             raise Exception(f"Failed to execute AI Generated Script: {e}. Check {debug_script_name}")
-            
+
+        import os
+        if not os.path.exists(file_name_output):
+            print(f"DEBUG SCRIPT CONTENT:\n{generated_code}")
+            raise Exception(f"AI Script executed but failed to create the file '{file_name_output}'.")
+
         # ----------------------------------------------------
         # UPLOAD TO GOOGLE CLOUD STORAGE
         # ----------------------------------------------------
