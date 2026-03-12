@@ -256,7 +256,10 @@ class ReportGenerationService:
         
         # Setup defaults
         required_library, required_import = library_map.get(target_format, ("openpyxl", "from openpyxl import Workbook"))
-        file_name_output = output_filename or f"agentic_output_flow.{target_format}"
+        # In cloud run, the safest place to write execution output is /tmp
+        import os
+        tmp_dir = "/tmp" if os.environ.get("K_SERVICE") else "."
+        file_name_output = os.path.join(tmp_dir, f"agentic_output_flow.{target_format}").replace('\\', '/')
         
         # Merge custom_style and style_intent if provided
         extracted_style_intent = intent_data.get('style_intent', '')
@@ -310,9 +313,14 @@ class ReportGenerationService:
         try:
             storage_client = storage.Client()
             bucket = storage_client.bucket(settings.GS_BUCKET_NAME)
-            unique_filename = f"reports/{uuid.uuid4().hex}_{file_name_output}"
+            
+            # Keep only the base filename for the GCS blob name
+            base_filename = os.path.basename(file_name_output)
+            unique_filename = f"reports/{uuid.uuid4().hex}_{base_filename}"
+            
             blob = bucket.blob(unique_filename)
             blob.upload_from_filename(file_name_output)
+            
             # Delete local file after upload due to Cloud Run statelessness
             import os
             if os.path.exists(file_name_output):
