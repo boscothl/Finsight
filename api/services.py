@@ -282,6 +282,7 @@ class ReportGenerationService:
         CRITICAL RULES:
         - Parse the DATA PAYLOAD JSON string directly inside your python code to populate the tables/charts.
         - You MUST end your script by saving the file exactly to '{file_name_output}'. Do NOT give it a different name. Do NOT place it in a subfolder. Example: `prs.save('{file_name_output}')`
+        - Do NOT wrap your code in a main function or use `if __name__ == "__main__":`. Write the procedural code directly so it executes immediately.
         - Do NOT import os, sys, or subprocess. Only use safe formatting libraries.
         - Do NOT provide markdown explanation. ONLY output raw Python code wrapped in ```python ... ```
         """
@@ -295,7 +296,7 @@ class ReportGenerationService:
             f.write(generated_code)
 
         # Execute safe sandbox
-        exec_namespace = {}
+        exec_namespace = {"__name__": "__main__"}
         try:
             exec(generated_code, exec_namespace)
         except Exception as e:
