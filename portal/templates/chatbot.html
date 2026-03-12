@@ -24,7 +24,7 @@
             <form id="simpleReportForm">
                 <div class="form-group">
                     <label>Time Period</label>
-                    <input type="text" list="timePeriods" class="form-control" placeholder="e.g. Q3 2023, Last 30 Days, YTD">
+                    <input type="text" id="timePeriodInput" list="timePeriods" class="form-control" placeholder="e.g. Q3 2023, Last 30 Days, YTD" required>
                     <datalist id="timePeriods">
                         <option value="Last 30 Days">
                         <option value="Current Quarter">
@@ -35,7 +35,7 @@
 
                 <div class="form-group">
                     <label>Report Type</label>
-                    <input type="text" list="reportTypes" class="form-control" placeholder="e.g. Financial Summary, Expense Analysis">
+                    <input type="text" id="reportTypeInput" list="reportTypes" class="form-control" placeholder="e.g. Financial Summary, Expense Analysis" required>
                     <datalist id="reportTypes">
                         <option value="Financial Summary">
                         <option value="Expense Tracking">
@@ -264,9 +264,57 @@
         });
     });
 
-    function generateSimpleReport() {
-        alert("Simple Report Generation pipeline triggered via Django.");
-        window.location.href = "{% url 'reports' %}";
+    async function generateSimpleReport() {
+        const timePeriod = document.getElementById('timePeriodInput').value.trim();
+        const reportType = document.getElementById('reportTypeInput').value.trim();
+        const format = document.getElementById('formatSelect').value;
+        const style = document.getElementById('referenceStyleSelect').value;
+
+        if (!timePeriod || !reportType || !format) {
+            alert("Please fill in Time Period, Report Type, and Format.");
+            return;
+        }
+
+        const prompt = `Generate a ${reportType} report for ${timePeriod} in ${format} format using ${style ? style + ' style' : 'default style'}.`;
+        
+        // Disable button and show spinner
+        const btn = document.querySelector('.btn-generate');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Generating... Background AI Agent working';
+        btn.disabled = true;
+
+        try {
+            const response = await fetch("{% url 'chat_api' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ message: prompt })
+            });
+
+            const data = await response.json();
+            
+            // Re-enable and evaluate
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            
+            if (data.response) {
+                // Assuming it's generated successfully when a file is produced
+                if(data.response.includes('generated') || data.response.includes('Download')) {
+                    window.location.href = "{% url 'reports' %}";
+                } else {
+                    // Agent returned asking for more specifics
+                    alert("Vertex AI says: " + data.response);
+                }
+            } else {
+                alert("Sorry, encountered an error.");
+            }
+        } catch (error) {
+            alert("Error: " + error);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
     }
 
     // --- Style Manager Upload Flow ---
