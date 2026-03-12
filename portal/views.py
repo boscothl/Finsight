@@ -2,9 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from api.models import Claim, BudgetPool, ChatSession, ChatMessage, GeneratedReport
 from api.services import ChatbotService, ReportGenerationService
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, Http404
 from django.contrib.auth import authenticate, login
+from django.conf import settings
+from google.cloud import storage
 import json
+import urllib.parse
 from django.utils import timezone
 
 def login_view(request):
@@ -91,6 +94,43 @@ def chatbot_view(request):
 def reports_view(request):
     reports = GeneratedReport.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'reports.html', {'reports': reports})
+
+@login_required(login_url='login')
+def download_report(request, report_id):
+    try:
+        report = GeneratedReport.objects.get(id=report_id)
+        if report.user != request.user:
+            raise Http404("Report not found")
+
+        prefix = f"https://storage.googleapis.com/{settings.GS_BUCKET_NAME}/"
+        if not report.file_url.startswith(prefix):
+            raise Http404("Invalid blob format")
+            
+        blob_name = urllib.parse.unquote(report.file_url[len(prefix):])
+
+        client = storage.Client()
+        bucket = client.bucket(settings.GS_BUCKET_NAME)
+        blob = bucket.blob(blob_name)
+        
+        file_bytes = blob.download_as_bytes()
+
+        content_type = 'application/octet-stream'
+        if '.xlsx' in blob_name:
+            content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        elif '.docx' in blob_name:
+            content_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        elif '.pptx' in blob_name:
+            content_type = 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+
+        response = HttpResponse(file_bytes, content_type=content_type)
+        
+        clean_filename = blob_name.split('_', 1)[-1] if '_' in blob_name else blob_name.split('/')[-1]
+        response['Content-Disposition'] = f'attachment; filename="{clean_filename}"'
+        
+        return response
+        
+    except GeneratedReport.DoesNotExist:
+        raise Http404("Report not found")
 
 @login_required(login_url='login')
 def approval_view(request):

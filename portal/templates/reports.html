@@ -34,7 +34,7 @@
                 <p>Format: {% if '.xlsx' in report.file_url %}.xlsx{% elif '.docx' in report.file_url %}.docx{% else %}.pptx{% endif %}</p>
             </div>
             <div class="report-actions">
-                <a href="{{ report.file_url }}" target="_blank" class="btn btn-sm btn-outline"><i class="fas fa-download"></i> Download</a>
+                <a href="{% url 'download_report' report.id %}" target="_blank" class="btn btn-sm btn-outline"><i class="fas fa-download"></i> Download</a>
                 <button class="btn btn-sm btn-outline"><i class="fas fa-trash"></i></button>
             </div>
         </div>
