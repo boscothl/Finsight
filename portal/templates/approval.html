@@ -11,6 +11,9 @@
 <div class="approval-header">
     <h1 class="page-title">Claims Management</h1>
     <div class="header-actions">
+        <button class="btn btn-primary" onclick="openBudgetPoolModal()">
+            <i class="fas fa-plus"></i> New Budget Pool
+        </button>
         <!-- Filter/Sort Controls -->
         <select class="form-select filter-dropdown" onchange="filterClaims(this.value)">
             <option value="all">All Categories</option>
@@ -18,11 +21,49 @@
             <option value="Meals">Meals</option>
             <option value="Hotel">Hotel</option>
         </select>
-        <button class="btn btn-primary" onclick="window.print()">
+        <button class="btn btn-outline" onclick="window.print()">
             <i class="fas fa-print"></i> Report
         </button>
     </div>
 </div>
+
+<!-- Budget Pools Overview -->
+<section class="budget-pools-section card">
+    <h2 class="section-heading">Budget Pools Overview</h2>
+    <div class="table-responsive">
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Group</th>
+                    <th>Time Horizon</th>
+                    <th>Total Budget</th>
+                    <th>Remaining</th>
+                    <th>Utilization</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pool in budget_pools %}
+                <tr>
+                    <td><strong>{{ pool.name }}</strong></td>
+                    <td>{{ pool.group|default:"-" }}</td>
+                    <td>{{ pool.start_date|date:"M d, Y" }} - {{ pool.end_date|date:"M d, Y" }}</td>
+                    <td>HKD {{ pool.total_budget_hkd }}</td>
+                    <td>HKD {{ pool.remaining_hkd }}</td>
+                    <td>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: {{ pool.utilization_percentage }}%;"></div>
+                        </div>
+                        <small>{{ pool.utilization_percentage }}%</small>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center">No budget pools created yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
 
 <!-- Pending Grid -->
 <section class="pending-section">
@@ -107,6 +148,44 @@
 {% endblock %}
 
 {% block modals %}
+<!-- Budget Pool Modal -->
+<div id="budgetPoolModal" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width: 500px;">
+        <button class="close-modal" onclick="closeBudgetPoolModal()">&times;</button>
+        <div class="modal-body" style="padding: 2rem;">
+            <h2 style="margin-bottom: 1.5rem;">Create New Budget Pool</h2>
+            <form id="budgetPoolForm" onsubmit="submitBudgetPool(event)">
+                <div class="form-group">
+                    <label>Pool Name</label>
+                    <input type="text" id="bp-name" required placeholder="e.g., Q3 Marketing Event">
+                </div>
+                <div class="form-group">
+                    <label>Group</label>
+                    <input type="text" id="bp-group" placeholder="e.g., Marketing">
+                </div>
+                <div class="form-group">
+                    <label>Total Amount (HKD)</label>
+                    <input type="number" id="bp-amount" required placeholder="50000" min="0" step="0.01">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" id="bp-start" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" id="bp-end" required>
+                    </div>
+                </div>
+                <div class="modal-actions" style="margin-top: 2rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeBudgetPoolModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Pool</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Review Modal -->
 <div id="claimModal" class="modal-overlay hidden">
     <div class="modal-content">
@@ -128,33 +207,46 @@
                 <form id="approvalForm" method="post" action="">
                     {% csrf_token %}
                     
-                    <div class="form-group">
-                        <label>Merchant (OCR Verified)</label>
-                        <div class="input-with-icon">
-                            <i class="fas fa-check-circle text-success"></i>
-                            <input type="text" id="modal-merchant" name="merchant" readonly>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
+                    <div id="primary-review-view">
                         <div class="form-group">
-                            <label>Date</label>
-                            <input type="date" id="modal-date" name="date" readonly>
+                            <label>Merchant (OCR Verified)</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <input type="text" id="modal-merchant" name="merchant" readonly>
+                            </div>
                         </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Date</label>
+                                <input type="date" id="modal-date" name="date" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>Amount (HKD)</label>
+                                <input type="number" id="modal-amount" name="amount" readonly>
+                            </div>
+                        </div>
+
+                        <div class="modal-actions">
+                            <button type="button" onclick="showRejectionView()" class="btn btn-danger-outline">Reject</button>
+                            <button type="submit" name="action" value="approve" class="btn btn-success">Approve</button>
+                        </div>
+                    </div>
+
+                    <!-- Secondary View for Rejection Reason -->
+                    <div id="rejection-view" class="hidden" style="margin-top: 1rem; border-top: 1px solid #eee; padding-top: 1rem;">
+                        <h3 style="color: #dc3545; margin-bottom: 0.5rem;">Reject Claim</h3>
+                        <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">Please provide a reason for rejecting this claim. This will be visible to the employee.</p>
+                        
                         <div class="form-group">
-                            <label>Amount (HKD)</label>
-                            <input type="number" id="modal-amount" name="amount" readonly>
+                            <label>Rejection Reason</label>
+                            <textarea id="modal-rejection-note" name="note" placeholder="Enter reason here..." rows="4"></textarea>
                         </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label>Reviewer Note</label>
-                        <textarea name="note" placeholder="Add a note (required for rejection)..."></textarea>
-                    </div>
-
-                    <div class="modal-actions">
-                        <button type="submit" name="action" value="reject" class="btn btn-danger-outline">Reject</button>
-                        <button type="submit" name="action" value="approve" class="btn btn-success">Approve</button>
+                        <div class="modal-actions">
+                            <button type="button" onclick="hideRejectionView()" class="btn btn-outline">Cancel</button>
+                            <button type="submit" name="action" value="reject" class="btn btn-danger" onclick="requireRejectionNote(event)">Confirm Reject</button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -176,30 +268,72 @@
         });
     }
 
-    function openClaimModal(claimId) {
-        // In a real implementation, fetch details via AJAX
-        // For MVP, we'll mock populating the fields based on the ID or data attributes
+    /* Budget Pool Modal logic */
+    function openBudgetPoolModal() {
+        document.getElementById('budgetPoolForm').reset();
+        document.getElementById('budgetPoolModal').classList.remove('hidden');
+    }
+
+    function closeBudgetPoolModal() {
+        document.getElementById('budgetPoolModal').classList.add('hidden');
+    }
+
+    async function submitBudgetPool(e) {
+        e.preventDefault();
         
+        const name = document.getElementById('bp-name').value;
+        const group = document.getElementById('bp-group').value;
+        const amount = document.getElementById('bp-amount').value;
+        const startDate = document.getElementById('bp-start').value;
+        const endDate = document.getElementById('bp-end').value;
+
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('group', group);
+        formData.append('amount', amount);
+        formData.append('start_date', startDate);
+        formData.append('end_date', endDate);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        try {
+            const response = await fetch("{% url 'create_budget_pool' %}", {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if (data.success) {
+                window.location.reload(); // Reload to show new pool
+            } else {
+                alert("Error creating budget pool: " + (data.error || 'Unknown error'));
+            }
+        } catch (err) {
+            alert("Error: " + err.message);
+        }
+    }
+
+    /* Claim Review Modal logic */
+    function openClaimModal(claimId) {
         const modal = document.getElementById('claimModal');
         const form = document.getElementById('approvalForm');
         
-        // Update Action URL
-        // Currently hardcoded pattern, but should be dynamic
         form.action = `/portal/approval/action/${claimId}/PLACEHOLDER/`.replace('PLACEHOLDER', ''); 
         
-        // Mock Data Population - Replace with fetch call
+        // Mock Data - In reality this should be fetched from an endpoint
         document.getElementById('modal-claim-id').textContent = claimId;
         document.getElementById('modal-merchant').value = "Uber Technologies";
         document.getElementById('modal-amount').value = "500.00";
         document.getElementById('modal-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('modal-rejection-note').value = ""; // Reset note
 
-        // Hack for form action handling with single URL structure
-        // The view expects /action/ID/TYPE/
-        // We'll use JS to intercept submit
+        // Reset views
+        hideRejectionView();
+
         form.onsubmit = function(e) {
             e.preventDefault();
             const action = e.submitter.value; // 'approve' or 'reject'
             const url = `/portal/approval/action/${claimId}/${action}/`;
+            
+            // Rejection validation handled in requireRejectionNote
             this.action = url;
             this.submit();
         };
@@ -211,11 +345,33 @@
         document.getElementById('claimModal').classList.add('hidden');
     }
 
+    function showRejectionView() {
+        document.getElementById('primary-review-view').style.display = 'none';
+        document.getElementById('rejection-view').classList.remove('hidden');
+    }
+
+    function hideRejectionView() {
+        document.getElementById('primary-review-view').style.display = 'block';
+        document.getElementById('rejection-view').classList.add('hidden');
+    }
+
+    function requireRejectionNote(e) {
+        const note = document.getElementById('modal-rejection-note').value.trim();
+        if (!note) {
+            e.preventDefault();
+            alert("Please provide a rejection reason.");
+        }
+    }
+
     // Close on outside click
     window.onclick = function(event) {
-        const modal = document.getElementById('claimModal');
-        if (event.target == modal) {
+        const claimModal = document.getElementById('claimModal');
+        const bpModal = document.getElementById('budgetPoolModal');
+        if (event.target == claimModal) {
             closeClaimModal();
+        }
+        if (event.target == bpModal) {
+            closeBudgetPoolModal();
         }
     }
 </script>

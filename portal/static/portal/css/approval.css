@@ -176,3 +176,24 @@
 }
 
 .hidden { display: none !important; }
+
+/* Budget Pools */
+.budget-pools-section {
+    margin-bottom: 3rem;
+    padding: 2rem;
+}
+
+.progress-bar-container {
+    width: 100%;
+    background-color: #e5e7eb;
+    border-radius: 9999px;
+    height: 0.5rem;
+    margin-top: 0.25rem;
+    overflow: hidden;
+}
+
+.progress-bar {
+    background-color: #3b82f6; /* or var(--primary-color) */
+    height: 100%;
+    border-radius: 9999px;
+}

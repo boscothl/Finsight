@@ -22,6 +22,7 @@ class User(AbstractUser):
 class BudgetPool(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, null=True, blank=True, related_name='budget_pools')
     name = models.CharField(max_length=255)
+    group = models.CharField(max_length=255, null=True, blank=True)
     start_date = models.DateField()
     end_date = models.DateField()
     total_budget_hkd = models.DecimalField(max_digits=12, decimal_places=2)
@@ -32,6 +33,13 @@ class BudgetPool(models.Model):
         if not self.pk and self.remaining_hkd == 0:
             self.remaining_hkd = self.total_budget_hkd
         super().save(*args, **kwargs)
+
+    @property
+    def utilization_percentage(self):
+        if self.total_budget_hkd > 0:
+            spent = self.total_budget_hkd - self.remaining_hkd
+            return round((spent / self.total_budget_hkd) * 100, 1)
+        return 0
 
     def __str__(self):
         return self.name

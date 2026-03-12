@@ -133,11 +133,41 @@ def download_report(request, report_id):
         raise Http404("Report not found")
 
 @login_required(login_url='login')
+def create_budget_pool(request):
+    if request.method == "POST":
+        name = request.POST.get('name')
+        group = request.POST.get('group')
+        amount = request.POST.get('amount')
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+
+        if not all([name, amount, start_date, end_date]):
+            return JsonResponse({'error': 'Missing required fields'}, status=400)
+
+        try:
+            budget_pool = BudgetPool.objects.create(
+                company=request.user.company,
+                name=name,
+                group=group,
+                total_budget_hkd=amount,
+                remaining_hkd=amount,
+                start_date=start_date,
+                end_date=end_date
+            )
+            return JsonResponse({'success': True, 'id': budget_pool.id})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    return JsonResponse({'error': 'Invalid request'}, status=405)
+
+@login_required(login_url='login')
 def approval_view(request):
+    budget_pools = BudgetPool.objects.all()
     pending_claims = Claim.objects.filter(status='pending').order_by('-created_at')
     history_claims = Claim.objects.exclude(status='pending').order_by('-updated_at')[:10]
     
     context = {
+        'budget_pools': budget_pools,
         'pending_claims': pending_claims,
         'history_claims': history_claims,
         'pending_count': pending_claims.count()
@@ -146,16 +176,21 @@ def approval_view(request):
 
 @login_required(login_url='login')
 def approval_action(request, claim_id, action):
-    # Placeholder for approval/rejection logic
+    # Approval/rejection logic
     if request.method == "POST":
         try:
+            from api.models import Approval
             claim = Claim.objects.get(id=claim_id)
             # Capture notes from form
             note = request.POST.get('note')
-            if note:
-                # Append or set note
-                current_note = claim.note or ""
-                claim.note = f"{current_note} | Reviewer: {note}"
+            
+            # Create Approval record
+            approval = Approval.objects.create(
+                claim=claim,
+                approver=request.user,
+                decision=action,
+                comment=note if note else ""
+            )
 
             if action == 'approve':
                 claim.status = 'approved'
