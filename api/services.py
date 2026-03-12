@@ -99,6 +99,50 @@ class ChatbotService:
         """
         return f"Hello, I am the {context} chatbot. You said: '{message}'. (AI Integration Pending)"
 
+    @staticmethod
+    def generate_report_chat_response(session, latest_user_message):
+        """
+        Handles the conversational flow for Report Generation. 
+        It appends previous messages to establish context, checks intent,
+        and generates the report if all criteria are met.
+        """
+        from api.models import GeneratedReport
+        # Get chat history up to now
+        history = list(session.messages.order_by('timestamp').values_list('role', 'content'))
+        
+        # Build prompt string
+        chat_context = "Chat History:\n"
+        for role, content in history[-6:]: # Keep last 6 interactions
+            chat_context += f"{role}: {content}\n"
+            
+        full_prompt = f"{chat_context}\nLatest Request: {latest_user_message}"
+        
+        # Execute Pipeline (Agent 1 will gatekeep if info is missing)
+        try:
+            result = ReportGenerationService.execute_two_agent_pipeline(full_prompt)
+        except Exception as e:
+            return f"I encountered an error trying to process that: {str(e)}"
+            
+        if result.get("status") == "needs_info":
+            return result.get("message")
+            
+        if result.get("status") == "success":
+            file_url = result.get("file_url")
+            report_title = result.get("intent_parsed", {}).get("report_title_derived", "Custom Report")
+            
+            if file_url:
+                # Save to DataBase
+                GeneratedReport.objects.create(
+                    user=session.user,
+                    file_url=file_url,
+                    # Setting template to None for ad-hoc agentic reports
+                )
+                return f"Success! I've generated the **{report_title}**. You can download it from the <a href='/portal/reports/'>Reports Library</a>.<br><br>Direct Link: <a href='{file_url}' target='_blank'>Download Here</a>"
+            else:
+                return f"I generated the {report_title} successfully, but there was an error uploading it to the cloud. Please contact support."
+        
+        return "Sorry, I am unable to generate the report right now."
+
 class ReportGenerationService:
     @staticmethod
     def _extract_json(text):
@@ -117,6 +161,11 @@ class ReportGenerationService:
         Agent 1: Interprets Intent -> Queries DB securely -> serializes to JSON
         Agent 2: Writes Python script generation code with the JSON context + style format
         """
+        # Add cloud storage dependency
+        from google.cloud import storage
+        from django.conf import settings
+        import uuid
+        
         _init_vertex()
         
         # ----------------------------------------------------
@@ -125,7 +174,13 @@ class ReportGenerationService:
         agent_1 = GenerativeModel("gemini-2.5-pro")
         intent_prompt = f"""
         You are the Data Intent Agent for Finsight.
-        Analyze a user's natural language request for a business report, and determine EXACTLY which database tables and filters are needed.
+        Analyze a user's natural language request (and chat history) for a business report.
+        
+        CRITICAL RULE: You MUST verify if the user has provided the following 4 absolute minimum criteria across their conversation:
+        1. Time Period (e.g. "Last 30 Days", "Q3", "All Time")
+        2. Report Type (e.g. "Expense Summary", "Budget Overview", "Chart")
+        3. Format (Must be one of: "xlsx", "docx", "pptx")
+        4. Style (e.g. "Blue Theme", "Corporate Dark", or "Standard")
         
         Available Finsight Schema:
         1. BudgetPool (id, company_id, name, start_date, end_date, total_budget_hkd, remaining_hkd)
@@ -139,6 +194,10 @@ class ReportGenerationService:
 
         Respond STRICTLY in a JSON format matching this structure:
         {{
+            "ready_to_generate": boolean (false if any of the 4 required parameters are missing),
+            "missing_info_message": "If ready_to_generate is false, phrase a polite, helpful question asking ONLY for the missing fields.",
+            "target_format": "xlsx/docx/pptx or null",
+            "style_intent": "A brief description of the style they want, or null",
             "requires_claims_data": boolean,
             "requires_budget_pool_data": boolean,
             "requires_gl_data": boolean,
@@ -153,7 +212,16 @@ class ReportGenerationService:
         """
         res_1 = agent_1.generate_content(intent_prompt)
         intent_data = json.loads(ReportGenerationService._extract_json(res_1.text))
-
+        
+        # Gatekeeper logic: Stop and ask for info if we don't have all 4
+        if not intent_data.get("ready_to_generate"):
+            return {
+                "status": "needs_info",
+                "message": intent_data.get("missing_info_message", "Please clarify your time period, report type, format, and style.")
+            }
+            
+        target_format = intent_data.get("target_format", target_format)
+        
         # ----------------------------------------------------
         # DJANGO ORM DATA INGESTION
         # ----------------------------------------------------
@@ -189,7 +257,10 @@ class ReportGenerationService:
         # Setup defaults
         required_library, required_import = library_map.get(target_format, ("openpyxl", "from openpyxl import Workbook"))
         file_name_output = output_filename or f"agentic_output_flow.{target_format}"
-        style_injection = f"Use this visual style theme: {json.dumps(custom_style)}" if custom_style else "Use a clean, corporate standard style."
+        
+        # Merge custom_style and style_intent if provided
+        extracted_style_intent = intent_data.get('style_intent', '')
+        style_injection = f"Use this visual style theme/rule: {custom_style if custom_style else extracted_style_intent}"
 
         agent_2_prompt = f"""
         You are the Report Code Generation Agent. Write a standalone Python script to generate a report file.
@@ -226,8 +297,29 @@ class ReportGenerationService:
         except Exception as e:
             raise Exception(f"Failed to execute AI Generated Script: {e}. Check {debug_script_name}")
             
+        # ----------------------------------------------------
+        # UPLOAD TO GOOGLE CLOUD STORAGE
+        # ----------------------------------------------------
+        public_url = ""
+        try:
+            storage_client = storage.Client()
+            bucket = storage_client.bucket(settings.GS_BUCKET_NAME)
+            unique_filename = f"reports/{uuid.uuid4().hex}_{file_name_output}"
+            blob = bucket.blob(unique_filename)
+            blob.upload_from_filename(file_name_output)
+            # Delete local file after upload due to Cloud Run statelessness
+            import os
+            if os.path.exists(file_name_output):
+                os.remove(file_name_output)
+                
+            public_url = f"https://storage.googleapis.com/{settings.GS_BUCKET_NAME}/{unique_filename}"
+        except Exception as e:
+            print(f"GCS Upload Error: {e}")
+            public_url = None
+            
         return {
             "status": "success",
+            "file_url": public_url,
             "file_path": file_name_output,
             "intent_parsed": intent_data,
             "debug_script": debug_script_name,

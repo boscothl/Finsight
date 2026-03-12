@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from api.models import Claim, BudgetPool
-from api.services import ChatbotService
+from api.models import Claim, BudgetPool, ChatSession, ChatMessage, GeneratedReport
+from api.services import ChatbotService, ReportGenerationService
 from django.http import JsonResponse, HttpResponse
 from django.contrib.auth import authenticate, login
 import json
@@ -75,11 +75,22 @@ def dashboard_view(request):
 
 @login_required(login_url='login')
 def chatbot_view(request):
-    return render(request, 'chatbot.html')
+    # Fetch or create a chat session for report generation
+    session, created = ChatSession.objects.get_or_create(
+        user=request.user, 
+        context="report_builder"
+    )
+    # Get chat history
+    messages = session.messages.order_by('timestamp')
+    
+    return render(request, 'chatbot.html', {
+        'chat_messages': messages
+    })
 
 @login_required(login_url='login')
 def reports_view(request):
-    return render(request, 'reports.html')
+    reports = GeneratedReport.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'reports.html', {'reports': reports})
 
 @login_required(login_url='login')
 def approval_view(request):
@@ -116,14 +127,27 @@ def approval_action(request, claim_id, action):
             pass
     return redirect('approval')
 
+@login_required(login_url='login')
 def finance_chat_view(request):
-    # This might be called via AJAX so @csrf_exempt might be needed or fetch headers
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            user_message = data.get('message', '')
-            # Call the service
-            bot_response = ChatbotService.generate_response(user_message, context="admin")
+            user_message_text = data.get('message', '').strip()
+            if not user_message_text:
+                return JsonResponse({'error': 'Empty message'}, status=400)
+
+            # Get the session
+            session, _ = ChatSession.objects.get_or_create(user=request.user, context="report_builder")
+            
+            # Save user message to DB
+            ChatMessage.objects.create(session=session, role="user", content=user_message_text)
+
+            # Pass the session ID to the service so it can read history
+            bot_response = ChatbotService.generate_report_chat_response(session, user_message_text)
+            
+            # Save bot message to DB
+            ChatMessage.objects.create(session=session, role="model", content=bot_response)
+
             return JsonResponse({'response': bot_response})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)

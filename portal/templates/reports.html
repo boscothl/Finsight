@@ -17,51 +17,32 @@
     </div>
 
     <div class="reports-grid">
-        <!-- Placeholder Report Cards -->
+        {% for report in reports %}
         <div class="report-card">
-            <div class="report-icon excel">
-                <i class="fas fa-file-excel"></i>
+            <div class="report-icon {% if '.xlsx' in report.file_url %}excel{% elif '.docx' in report.file_url %}word{% else %}powerpoint{% endif %}">
+                {% if '.xlsx' in report.file_url %}
+                    <i class="fas fa-file-excel"></i>
+                {% elif '.docx' in report.file_url %}
+                    <i class="fas fa-file-word"></i>
+                {% else %}
+                    <i class="fas fa-file-powerpoint"></i>
+                {% endif %}
             </div>
             <div class="report-details">
-                <h3>Q3 Financial Summary</h3>
-                <p>Generated: Today, 10:30 AM</p>
-                <p>Format: .xlsx</p>
+                <h3>{% if report.template %}{{ report.template.name }}{% else %}AI Custom Report #{{ report.id }}{% endif %}</h3>
+                <p>Generated: {{ report.created_at|date:"M d, Y, h:i A" }}</p>
+                <p>Format: {% if '.xlsx' in report.file_url %}.xlsx{% elif '.docx' in report.file_url %}.docx{% else %}.pptx{% endif %}</p>
             </div>
             <div class="report-actions">
-                <button class="btn btn-sm btn-outline"><i class="fas fa-download"></i> Download</button>
+                <a href="{{ report.file_url }}" target="_blank" class="btn btn-sm btn-outline"><i class="fas fa-download"></i> Download</a>
                 <button class="btn btn-sm btn-outline"><i class="fas fa-trash"></i></button>
             </div>
         </div>
-
-        <div class="report-card">
-            <div class="report-icon word">
-                <i class="fas fa-file-word"></i>
-            </div>
-            <div class="report-details">
-                <h3>Monthly Expense Brief</h3>
-                <p>Generated: Yesterday, 2:15 PM</p>
-                <p>Format: .docx</p>
-            </div>
-            <div class="report-actions">
-                <button class="btn btn-sm btn-outline"><i class="fas fa-download"></i> Download</button>
-                <button class="btn btn-sm btn-outline"><i class="fas fa-trash"></i></button>
-            </div>
-        </div>
-
-        <div class="report-card">
-            <div class="report-icon powerpoint">
-                <i class="fas fa-file-powerpoint"></i>
-            </div>
-            <div class="report-details">
-                <h3>Board Meeting Deck</h3>
-                <p>Generated: Oct 24, 2023</p>
-                <p>Format: .pptx</p>
-            </div>
-            <div class="report-actions">
-                <button class="btn btn-sm btn-outline"><i class="fas fa-download"></i> Download</button>
-                <button class="btn btn-sm btn-outline"><i class="fas fa-trash"></i></button>
-            </div>
-        </div>
+        {% empty %}
+        <p style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary);">
+            No custom reports generated yet. Head over to the Report Builder to create one!
+        </p>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}

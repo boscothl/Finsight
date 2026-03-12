@@ -95,15 +95,22 @@
             <div class="chat-messages" id="chat-history">
                 <div class="message bot-message">
                     <div class="message-content">
-                        <p>Hello! Let's build a custom report iteratively. What would you like to analyze, and how should it look?</p>
+                        <p>Hello! Let's build a custom report iteratively. Please specify the <strong>Time Period</strong>, <strong>Report Type</strong>, <strong>Format (xlsx/docx/pptx)</strong>, and preferred <strong>Style</strong>.</p>
                         <div class="suggestion-chips">
                             <button class="chip">Draft an Expense Report in Word</button>
                             <button class="chip">Build a Q3 Deck with Blue styling</button>
                             <button class="chip">I need an Excel sheet of travel claims</button>
                         </div>
                     </div>
-                    <span class="timestamp">Just now</span>
                 </div>
+
+                {% for msg in chat_messages %}
+                <div class="message {% if msg.role == 'user' %}user-message{% else %}bot-message{% endif %}">
+                    <div class="message-content">
+                        {{ msg.content|safe }}
+                    </div>
+                </div>
+                {% endfor %}
             </div>
 
             <div class="chat-input-area">
