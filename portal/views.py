@@ -253,20 +253,21 @@ def upload_style(request):
         
         try:
             # Send the raw bytes to Vertex AI
-            extraction_result_json = StyleExtractorService.extract_style_from_image(file_bytes, mime_type)
+            extraction_result = StyleExtractorService.extract_style_from_image(file_bytes, mime_type)
             
-            # The result should be a JSON string, let's parse it to ensure validity, or just save it.
-            # We can save it under the generic title format 'Style from {filename}'
             import json
-            try:
-                extraction_dict = json.loads(extraction_result_json)
-                style_name = extraction_dict.get('style_name', uploaded_file.name)
-                # Ensure it's pretty-formatted as a string for saving
+            if isinstance(extraction_result, dict):
+                extraction_dict = extraction_result
+                style_name = extraction_dict.get('style_name', f'Style from {uploaded_file.name}')
                 description = json.dumps(extraction_dict, indent=2)
-            except json.JSONDecodeError:
-                # Fallback if not valid JSON
-                style_name = f'Style extracted from {uploaded_file.name}'
-                description = extraction_result_json
+            else:
+                try:
+                    extraction_dict = json.loads(extraction_result)
+                    style_name = extraction_dict.get('style_name', f'Style from {uploaded_file.name}')
+                    description = json.dumps(extraction_dict, indent=2)
+                except Exception:
+                    style_name = f'Style extracted from {uploaded_file.name}'
+                    description = str(extraction_result)
             
             # Create the record without uploading the file anywhere
             style_record = CustomStyle.objects.create(
