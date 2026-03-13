@@ -326,44 +326,88 @@
         }
     }
 
-    function simulateStyleExtraction() {
+async function simulateStyleExtraction() {
         const btn = document.getElementById('extractStyleBtn');
+        const fileInput = document.getElementById('styleFileInput');
+        const file = fileInput.files[0];
+        
+        if (!file) {
+            alert("No file selected.");
+            return;
+        }
+
         btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Extracting Style using AI...';
         btn.disabled = true;
 
-        // Simulate API call delay
-        setTimeout(() => {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+            const response = await fetch('/portal/upload-style/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            });
+            const data = await response.json();
+            
+            if (response.ok && data.status === 'success') {
+                btn.innerHTML = '<i class="fas fa-magic"></i> Extract Style with AI';
+                btn.disabled = false;
+                btn.style.display = 'none';
+                document.getElementById('selectedFileName').textContent = '';
+                document.getElementById('styleFileInput').value = '';
+
+                const styleList = document.getElementById('styleListContainer');
+
+                // Unselect all existing styles
+                document.querySelectorAll('.style-list .style-item').forEach(item => item.classList.remove('selected'));
+
+                // Create new extracted style listing
+                const newItem = document.createElement('div');
+                newItem.className = 'style-item selected';
+                newItem.setAttribute('onclick', 'selectStyle(this)');
+                newItem.innerHTML = `
+                    <strong>${data.message.replace(' saved successfully!', '')}</strong>
+                    <p>AI Style extracted successfully from the document.</p>
+                `;
+
+                styleList.prepend(newItem);
+
+                // Add to the main dropdown selector
+                const selectDropdown = document.getElementById('referenceStyleSelect');
+                const newOption = document.createElement('option');
+                newOption.value = data.style_id;
+                newOption.text = data.message.replace(' saved successfully!', '');
+                newOption.selected = true;
+                selectDropdown.add(newOption, 1);
+            } else {
+                alert("Error extracting style: " + (data.message || "Unknown error"));
+                btn.innerHTML = '<i class="fas fa-magic"></i> Extract Style with AI';
+                btn.disabled = false;
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Network error while extracting style.");
             btn.innerHTML = '<i class="fas fa-magic"></i> Extract Style with AI';
             btn.disabled = false;
-            btn.style.display = 'none';
-            document.getElementById('selectedFileName').textContent = '';
-            document.getElementById('styleFileInput').value = '';
+        }
+    }
 
-            const styleList = document.getElementById('styleListContainer');
-            
-            // Unselect all existing styles
-            document.querySelectorAll('.style-list .style-item').forEach(item => item.classList.remove('selected'));
-
-            // Create new extracted style listing
-            const newItem = document.createElement('div');
-            newItem.className = 'style-item selected';
-            newItem.setAttribute('onclick', 'selectStyle(this)');
-            newItem.innerHTML = `
-                <strong>AI Extracted Theme (New)</strong>
-                <p>Extracted from uploaded document. Primary color #2A9D8F, Inter font, minimal layout.</p>
-            `;
-            
-            styleList.prepend(newItem);
-            
-            // Add to the main dropdown selector
-            const selectDropdown = document.getElementById('referenceStyleSelect');
-            const newOption = document.createElement('option');
-            newOption.value = 'ai_extracted';
-            newOption.text = 'AI Extracted Theme (New)';
-            newOption.selected = true;
-            selectDropdown.add(newOption, 1);
-            
-        }, 2000);
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
     }
 
     function selectStyle(element) {

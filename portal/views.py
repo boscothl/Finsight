@@ -240,3 +240,44 @@ def generate_report_view(request):
         response['Content-Disposition'] = f'attachment; filename="report.{report_type}.txt"'
         return response
     return redirect('chatbot')
+
+@login_required(login_url='login')
+def upload_style(request):
+    from api.services import StyleExtractorService
+    from api.models import CustomStyle
+    if request.method == 'POST' and request.FILES.get('file'):
+        uploaded_file = request.FILES['file']
+        # Read the file directly into memory
+        file_bytes = uploaded_file.read()
+        mime_type = uploaded_file.content_type
+        
+        try:
+            # Send the raw bytes to Vertex AI
+            extraction_result_json = StyleExtractorService.extract_style_from_image(file_bytes, mime_type)
+            
+            # The result should be a JSON string, let's parse it to ensure validity, or just save it.
+            # We can save it under the generic title format 'Style from {filename}'
+            import json
+            try:
+                extraction_dict = json.loads(extraction_result_json)
+                style_name = extraction_dict.get('style_name', uploaded_file.name)
+                # Ensure it's pretty-formatted as a string for saving
+                description = json.dumps(extraction_dict, indent=2)
+            except json.JSONDecodeError:
+                # Fallback if not valid JSON
+                style_name = f'Style extracted from {uploaded_file.name}'
+                description = extraction_result_json
+            
+            # Create the record without uploading the file anywhere
+            style_record = CustomStyle.objects.create(
+                user=request.user,
+                name=style_name,
+                description=description
+            )
+            
+            return JsonResponse({'status': 'success', 'message': f'Style {style_name} saved successfully!', 'style_id': style_record.id})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    
+    return JsonResponse({'status': 'error', 'message': 'Invalid request or missing file.'}, status=400)
+

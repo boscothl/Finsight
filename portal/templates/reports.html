@@ -29,7 +29,7 @@
                 {% endif %}
             </div>
             <div class="report-details">
-                <h3>{% if report.template %}{{ report.template.name }}{% else %}AI Custom Report #{{ report.id }}{% endif %}</h3>
+                <h3>{% if report.template %}{{ report.template.name }}{% elif report.title %}{{ report.title }}{% else %}AI Custom Report #{{ report.id }}{% endif %}</h3>
                 <p>Generated: {{ report.created_at|date:"M d, Y, h:i A" }}</p>
                 <p>Format: {% if '.xlsx' in report.file_url %}.xlsx{% elif '.docx' in report.file_url %}.docx{% else %}.pptx{% endif %}</p>
             </div>

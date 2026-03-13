@@ -12,4 +12,5 @@ urlpatterns = [
     path('approval/action/<int:claim_id>/<str:action>/', views.approval_action, name='approval_action'),
     path('budget-pool/create/', views.create_budget_pool, name='create_budget_pool'),
     path('report/generate/', views.generate_report_view, name='generate_report'),
+    path('upload-style/', views.upload_style, name='upload_style'),
 ]

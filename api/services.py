@@ -135,6 +135,7 @@ class ChatbotService:
                 GeneratedReport.objects.create(
                     user=session.user,
                     file_url=file_url,
+                    title=report_title,
                     # Setting template to None for ad-hoc agentic reports
                 )
                 return f"Success! I've generated the **{report_title}**. You can download it from the <a href='/portal/reports/'>Reports Library</a>.<br><br>Direct Link: <a href='{file_url}' target='_blank'>Download Here</a>"
