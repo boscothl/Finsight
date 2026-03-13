@@ -343,11 +343,11 @@ async function simulateStyleExtraction() {
         formData.append('file', file);
         
         try {
-            const response = await fetch('/portal/upload-style/', {
+            const response = await fetch("{% url 'upload_style' %}", {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-CSRFToken': getCookie('csrftoken')
+                    'X-CSRFToken': '{{ csrf_token }}'
                 }
             });
             const data = await response.json();
