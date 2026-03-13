@@ -3,3 +3,5 @@
 plan-finsightMvp.prompt.md
 .venv
 /test
+**/__pycache__/
+*.pyc
