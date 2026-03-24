@@ -1,47 +1,41 @@
-import { Tabs } from 'expo-router';
 import React from 'react';
-
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Tabs } from 'expo-router';
+import { MaterialIcons } from '@expo/vector-icons'; // Or whichever icon set you prefer
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: '#6366f1',
+        tabBarInactiveTintColor: '#6b7280',
         headerShown: true,
-        tabBarButton: HapticTab,
+        headerStyle: {
+          backgroundColor: '#ffffff',
+        },
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          color: '#1f2937'
+        }
       }}>
       <Tabs.Screen
-        name="dashboard"
+        name="home"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="camera"
-        options={{
-          title: 'Scan Receipt',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="camera.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="claims"
-        options={{
-          title: 'Claims',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="list.bullet.clipboard.fill" color={color} />,
+          tabBarIcon: ({ color }) => <MaterialIcons size={28} name="home" color={color} />,
         }}
       />
       <Tabs.Screen
         name="chatbot"
         options={{
-          title: 'AI Helper',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="message.fill" color={color} />,
+          title: 'Chatbot',
+          tabBarIcon: ({ color }) => <MaterialIcons size={28} name="chat" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          title: 'Notifications',
+          tabBarIcon: ({ color }) => <MaterialIcons size={28} name="notifications" color={color} />,
         }}
       />
     </Tabs>
