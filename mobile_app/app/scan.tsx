@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Image, ActivityIndicator, TouchableOpacity, ScrollView, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { router, Stack } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -55,10 +55,11 @@ export default function ScanScreen() {
       const response = await uploadReceipt(uri);
       const extraction = response?.extraction || {};
       setOcrResult({
-        merchant: extraction.merchant || 'Unknown merchant',
-        amount: extraction.amount ?? 0,
+        merchant: extraction.merchant || '',
+        amount: extraction.amount ? extraction.amount.toString() : '',
         date: extraction.date || '',
-        category: extraction.category || 'Uncategorized',
+        category: extraction.category || '',
+        note: '',
       });
     } catch {
       alert('Upload failed. Please ensure you are logged in and the API is reachable.');
@@ -73,9 +74,10 @@ export default function ScanScreen() {
       setLoading(true);
       await submitClaimData({
         merchant: ocrResult.merchant,
-        amount: ocrResult.amount,
+        amount: parseFloat(ocrResult.amount) || 0,
         date: ocrResult.date || null,
         category: ocrResult.category,
+        note: ocrResult.note,
       });
       alert('Claim submitted successfully!');
       router.replace('/(tabs)/home');
@@ -84,6 +86,10 @@ export default function ScanScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const updateField = (field: string, value: string) => {
+    setOcrResult((prev: any) => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -128,29 +134,39 @@ export default function ScanScreen() {
       )}
 
       {ocrResult && !loading && (
-        <View style={styles.resultCard}>
-          <View style={styles.resultHeader}>
-            <MaterialIcons name="check-circle" size={24} color="#10b981" />
-            <Text style={styles.resultTitle}>Extraction Complete</Text>
-          </View>
-          
-          <View style={styles.fieldRow}>
-            <Text style={styles.fieldLabel}>Merchant</Text>
-            <Text style={styles.fieldValue}>{ocrResult.merchant}</Text>
-          </View>
-          <View style={styles.fieldRow}>
-            <Text style={styles.fieldLabel}>Amount (HKD)</Text>
-            <Text style={styles.fieldValue}>${ocrResult.amount}</Text>
-          </View>
-          <View style={styles.fieldRow}>
-            <Text style={styles.fieldLabel}>Date</Text>
-            <Text style={styles.fieldValue}>{ocrResult.date}</Text>
-          </View>
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ width: '100%' }}>
+          <View style={styles.resultCard}>
+            <View style={styles.resultHeader}>
+              <MaterialIcons name="check-circle" size={24} color="#10b981" />
+              <Text style={styles.resultTitle}>Verify Extraction</Text>
+            </View>
+            
+            <View style={styles.inputGroup}>
+              <Text style={styles.fieldLabel}>Merchant</Text>
+              <TextInput style={styles.inputField} value={ocrResult.merchant} onChangeText={(t) => updateField('merchant', t)} placeholder="Merchant Name" />
+            </View>
+            <View style={styles.inputGroup}>
+              <Text style={styles.fieldLabel}>Amount (HKD)</Text>
+              <TextInput style={styles.inputField} value={ocrResult.amount} onChangeText={(t) => updateField('amount', t)} keyboardType="numeric" placeholder="0.00" />
+            </View>
+            <View style={styles.inputGroup}>
+              <Text style={styles.fieldLabel}>Date (YYYY-MM-DD)</Text>
+              <TextInput style={styles.inputField} value={ocrResult.date} onChangeText={(t) => updateField('date', t)} placeholder="YYYY-MM-DD" />
+            </View>
+            <View style={styles.inputGroup}>
+              <Text style={styles.fieldLabel}>Category</Text>
+              <TextInput style={styles.inputField} value={ocrResult.category} onChangeText={(t) => updateField('category', t)} placeholder="Category (e.g. Travel)" />
+            </View>
+            <View style={styles.inputGroup}>
+              <Text style={styles.fieldLabel}>Note</Text>
+              <TextInput style={styles.inputField} value={ocrResult.note} onChangeText={(t) => updateField('note', t)} placeholder="Optional note" multiline />
+            </View>
 
-          <TouchableOpacity style={styles.submitBtn} onPress={submitClaim}>
-            <Text style={styles.submitBtnText}>Confirm & Submit Claim</Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity style={styles.submitBtn} onPress={submitClaim}>
+              <Text style={styles.submitBtnText}>Confirm & Submit Claim</Text>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
       )}
     </ScrollView>
     </>
@@ -244,19 +260,23 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1f2937',
   },
-  fieldRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 12,
+  inputGroup: {
+    marginBottom: 16,
   },
   fieldLabel: {
-    color: '#6b7280',
-    fontSize: 15,
+    color: '#4b5563',
+    fontSize: 14,
+    marginBottom: 6,
+    fontWeight: '500',
   },
-  fieldValue: {
+  inputField: {
+    backgroundColor: '#f9fafb',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
     color: '#1f2937',
-    fontSize: 15,
-    fontWeight: '600',
   },
   submitBtn: {
     backgroundColor: '#6366f1',

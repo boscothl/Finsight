@@ -126,6 +126,7 @@ export const uploadReceipt = async (imageUri: string) => {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      timeout: 120000, // Explicitly set longer timeout for upload
     });
     
     return response.data;

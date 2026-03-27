@@ -50,6 +50,7 @@ class MobileClaimsView(views.APIView):
             amount_hkd=data.get('amount'),
             date=data.get('date') if data.get('date') else None,
             category=data.get('category'),
+            note=data.get('note'),
             status='pending'
         )
         return Response(ClaimSerializer(claim).data, status=status.HTTP_201_CREATED)
