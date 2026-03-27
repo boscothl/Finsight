@@ -1,17 +1,30 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
+import { login } from '../services/api';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleLogin = () => {
-    // Basic mock logic. Real app will call API here.
-    if (email && password) {
+  const handleLogin = async () => {
+    setError('');
+    if (!username || !password) {
+      setError('Please enter username and password');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await login(username.trim(), password);
       router.replace('/(tabs)/home');
-    } else {
-      alert('Please enter company email and password');
+    } catch (err: any) {
+      const detail = err?.response?.data?.detail;
+      setError(detail || 'Login failed. Please check your credentials.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -25,14 +38,13 @@ export default function LoginScreen() {
         <Text style={styles.subtitle}>Sign in to manage your corporate claims</Text>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Company Email</Text>
+          <Text style={styles.label}>Username</Text>
           <TextInput
             style={styles.input}
-            placeholder="name@company.com"
-            value={email}
-            onChangeText={setEmail}
+            placeholder="your username"
+            value={username}
+            onChangeText={setUsername}
             autoCapitalize="none"
-            keyboardType="email-address"
           />
         </View>
 
@@ -47,8 +59,10 @@ export default function LoginScreen() {
           />
         </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Log In</Text>
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+        <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+          {loading ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.buttonText}>Log In</Text>}
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -113,5 +127,10 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  errorText: {
+    color: '#dc2626',
+    marginBottom: 12,
+    fontSize: 13,
   }
 });

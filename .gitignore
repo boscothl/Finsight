@@ -5,3 +5,4 @@ plan-finsightMvp.prompt.md
 /test
 **/__pycache__/
 *.pyc
+start_dev.bat

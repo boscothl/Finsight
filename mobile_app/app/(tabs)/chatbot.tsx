@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { sendComplianceQuestion } from '../../services/api';
+import { ActivityIndicator } from 'react-native';
 
 export default function ChatbotScreen() {
   const [messages, setMessages] = useState([
@@ -8,22 +10,33 @@ export default function ChatbotScreen() {
   ]);
   const [inputText, setInputText] = useState('');
 
-  const handleSend = () => {
+  const [loading, setLoading] = useState(false);
+
+  const handleSend = async () => {
     if (!inputText.trim()) return;
-    
-    // Add user message
-    const newMsg = { id: Date.now().toString(), text: inputText, isBot: false };
+
+    const userText = inputText;
+    const newMsg = { id: Date.now().toString(), text: userText, isBot: false };
     setMessages(prev => [...prev, newMsg]);
     setInputText('');
+    setLoading(true);
 
-    // Mock bot response
-    setTimeout(() => {
+    try {
+      const result = await sendComplianceQuestion(userText);
       setMessages(prev => [...prev, {
-        id: (Date.now() + 1).toString(),
-        text: 'That aligns with our travel policy. The daily meal allowance is $500 HKD. Please ensure you keep the receipt.',
+        id: Date.now().toString(),
+        text: result.answer || "I'm sorry, I couldn't process that.",
         isBot: true
       }]);
-    }, 1000);
+    } catch (e: any) {
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        text: "Error contacting the server. Please try again later.",
+        isBot: true
+      }]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const renderItem = ({ item }: { item: any }) => (
@@ -46,6 +59,7 @@ export default function ChatbotScreen() {
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
       />
+      {loading && <ActivityIndicator style={{marginVertical: 10}} color="#6366f1" />}
       
       <View style={styles.inputContainer}>
         <TextInput

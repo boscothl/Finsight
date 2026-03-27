@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Button, Image, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Image, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
+import { uploadReceipt, submitClaimData } from '../services/api';
 
 export default function ScanScreen() {
   const [image, setImage] = useState<string | null>(null);
@@ -42,30 +43,61 @@ export default function ScanScreen() {
     }
   };
 
-  const handleUpload = (uri?: string) => {
+  const handleUpload = async (uri?: string) => {
+    if (!uri) {
+      return;
+    }
+
     setLoading(true);
     setOcrResult(null);
-    
-    // Simulate Document AI OCR Delay
-    setTimeout(() => {
-      setOcrResult({ 
-        merchant: "XYZ Tech Supplies", 
-        amount: "1,250.00", 
-        date: "2026-03-24",
-        category: "Equipment"
+
+    try {
+      const response = await uploadReceipt(uri);
+      const extraction = response?.extraction || {};
+      setOcrResult({
+        merchant: extraction.merchant || 'Unknown merchant',
+        amount: extraction.amount ?? 0,
+        date: extraction.date || '',
+        category: extraction.category || 'Uncategorized',
       });
+    } catch {
+      alert('Upload failed. Please ensure you are logged in and the API is reachable.');
+    } finally {
       setLoading(false);
-    }, 2500);
+    }
   };
 
-  const submitClaim = () => {
-    // API logic will go here
-    alert('Claim submitted successfully!');
-    router.replace('/(tabs)/home');
+  const submitClaim = async () => {
+    if (!ocrResult) return;
+    try {
+      setLoading(true);
+      await submitClaimData({
+        merchant: ocrResult.merchant,
+        amount: ocrResult.amount,
+        date: ocrResult.date || null,
+        category: ocrResult.category,
+      });
+      alert('Claim submitted successfully!');
+      router.replace('/(tabs)/home');
+    } catch {
+      alert('Failed to submit claim');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <>
+      <Stack.Screen 
+        options={{
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => router.back()} style={{ marginLeft: 16 }}>
+              <MaterialIcons name="close" size={24} color="#000" />
+            </TouchableOpacity>
+          )
+        }} 
+      />
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.instructions}>
         Capture a clear photo of your receipt for automatic data extraction.
       </Text>
@@ -121,6 +153,7 @@ export default function ScanScreen() {
         </View>
       )}
     </ScrollView>
+    </>
   );
 }
 

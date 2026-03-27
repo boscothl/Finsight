@@ -75,21 +75,106 @@ class StyleExtractorService:
         except Exception as e:
             return {"error": "Failed to parse style JSON", "raw": raw_text}
 
-class OCRService:
+import os
+from google.cloud import documentai
+from google.cloud import storage
+import json
+
+class DocumentAIService:
     @staticmethod
-    def extract_receipt(file_path):
+    def extract_receipt(file_data, mime_type="image/jpeg", original_filename="receipt.jpg"):
         """
         Wraps google-cloud-documentai to process receipts.
+        Also uploads the raw image to GCS if configured.
         """
-        # MVP skeletal phase
-        return {
-            "merchant": "Starbucks HK",
-            "date": "2023-10-25",
-            "amount": 48.0,
-            "currency": "HKD",
-            "category": "Meals",
-            "items": ["Latte", "Bagel"]
-        }
+        project_id = os.getenv('GCP_PROJECT_ID', '')
+        location = os.getenv('DOCAI_LOCATION', 'us')
+        processor_id = os.getenv('DOCAI_PROCESSOR_ID', '')
+        bucket_name = os.getenv('GS_BUCKET_NAME', '')
+
+        gcs_uri = None
+
+        # 1. Upload to GCS
+        if bucket_name:
+            try:
+                storage_client = storage.Client()
+                bucket = storage_client.bucket(bucket_name)
+                blob = bucket.blob(f"receipts/mobile_uploads/{original_filename}")
+                file_data.seek(0)
+                blob.upload_from_file(file_data, content_type=mime_type)
+                gcs_uri = f"gs://{bucket_name}/{blob.name}"
+            except Exception as e:
+                print(f"Warning: Failed to upload to GCS - {e}")
+
+
+        # 2. Extract with Document AI or fallback to Gemini 2.5 Pro
+        if not project_id or not processor_id:
+            try:
+                import vertexai
+                from vertexai.generative_models import GenerativeModel, Part
+                vertexai.init(project="finsight-484914", location="us-central1")
+                model = GenerativeModel("gemini-2.5-pro")
+                file_data.seek(0)
+                image_part = Part.from_data(file_data.read(), mime_type=mime_type)
+                prompt = "Extract receipt details: merchant name, total amount as float, date (YYYY-MM-DD), and a simple category. Return JSON strictly like {'merchant': 'name', 'amount': 123.45, 'date': 'YYYY-MM-DD', 'category': 'Meals'}"
+                res = model.generate_content([image_part, prompt])
+                import re, json
+                match = re.search(r'```json\n(.*?)```', res.text, re.DOTALL)
+                raw = match.group(1).strip() if match else res.text.strip()
+                data = json.loads(raw)
+                return {
+                    "merchant": data.get("merchant", "Unknown Merchant"),
+                    "date": data.get("date", ""),
+                    "amount": float(data.get("amount", 0.0)),
+                    "currency": "HKD",
+                    "category": data.get("category", "Uncategorized"),
+                    "gcs_uri": gcs_uri
+                }
+            except Exception as e:
+                print("Fallback Gemini error:", e)
+                return {"merchant": f"Error: {str(e)}", "date": "2026-03-24", "amount": 0.0, "currency": "HKD", "category": "Error"}
+
+
+        try:
+            client = documentai.DocumentProcessorServiceClient()
+            name = client.processor_path(project_id, location, processor_id)
+            
+            # Read file content if not using GCS uri specifically
+            file_data.seek(0)
+            raw_document = documentai.RawDocument(content=file_data.read(), mime_type=mime_type)
+            request = documentai.ProcessRequest(name=name, raw_document=raw_document)
+            result = client.process_document(request=request)
+            document = result.document
+
+            extracted = {"currency": "HKD", "merchant": "", "amount": 0.0, "date": "", "gcs_uri": gcs_uri}
+            
+            for entity in document.entities:
+                type_ = entity.type_
+                value = entity.mention_text
+                if type_ == "supplier_name":
+                    extracted["merchant"] = value
+                elif type_ == "total_amount":
+                    # basic clean up
+                    num_str = value.replace('$', '').replace(',', '')
+                    try:
+                        extracted["amount"] = float(num_str)
+                    except:
+                        pass
+                elif type_ == "invoice_date":
+                    extracted["date"] = value
+                elif type_ == "currency":
+                    extracted["currency"] = value
+
+            return extracted
+
+        except Exception as e:
+            print(f"Doc AI Error: {e}")
+            return {
+                "error": str(e),
+                "merchant": "Error Parsing",
+                "amount": 0.0,
+                "gcs_uri": gcs_uri
+            }
 
 class ChatbotService:
     @staticmethod

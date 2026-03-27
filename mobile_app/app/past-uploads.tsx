@@ -1,7 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
+import { fetchClaims } from '../services/api';
 
 // Status styling mapping to web standards
 const statusStyles: any = {
@@ -11,26 +13,54 @@ const statusStyles: any = {
   'Action Required': { color: '#f59e0b', bg: '#fef3c7', icon: 'error-outline' },
 };
 
-const mockClaims = [
-  { id: '1', merchant: 'Cathay Pacific', amount: '120.00', date: '2026-03-24', status: 'Action Required', note: 'Missing receipt copy.' },
-  { id: '2', merchant: 'AWS Services', amount: '250.00', date: '2026-03-20', status: 'Pending', note: '' },
-  { id: '3', merchant: 'Starbucks', amount: '85.00', date: '2026-03-15', status: 'Approved', note: '' },
-  { id: '4', merchant: 'Apple Store', amount: '12,500.00', date: '2026-03-10', status: 'Rejected', note: 'Exceeds equipment budget.' },
-];
+type ClaimItem = {
+  id: number;
+  merchant: string | null;
+  amount_hkd: string | null;
+  date: string | null;
+  status: string;
+  note: string | null;
+};
+
+const toLabelStatus = (status: string) => {
+  if (!status) return 'Pending';
+  return status.charAt(0).toUpperCase() + status.slice(1);
+};
 
 export default function PastUploadsScreen() {
+  const [claims, setClaims] = useState<ClaimItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handlePressClaim = (claim: any) => {
-    if (claim.status === 'Action Required' || claim.status === 'Pending') {
-      router.push({ pathname: '/edit-claim', params: { id: claim.id, merchant: claim.merchant, amount: claim.amount } });
+  const loadClaims = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await fetchClaims();
+      setClaims(Array.isArray(data) ? data : []);
+    } catch {
+      setClaims([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadClaims();
+    }, [loadClaims])
+  );
+
+  const handlePressClaim = (claim: ClaimItem) => {
+    const labelStatus = toLabelStatus(claim.status);
+    if (labelStatus === 'Returned' || labelStatus === 'Pending') {
+      router.push({ pathname: '/edit-claim', params: { id: claim.id, merchant: claim.merchant || '', amount: claim.amount_hkd || '0' } });
     } else {
-      // Maybe open a read-only modal or just show an alert for MVP
-      alert(`Claim from ${claim.merchant} is ${claim.status}.`);
+      alert(`Claim from ${claim.merchant || 'Unknown Merchant'} is ${labelStatus}.`);
     }
   };
 
-  const renderItem = ({ item }: { item: any }) => {
-    const sStyle = statusStyles[item.status];
+  const renderItem = ({ item }: { item: ClaimItem }) => {
+    const labelStatus = toLabelStatus(item.status);
+    const sStyle = statusStyles[labelStatus] || statusStyles.Pending;
     
     return (
       <TouchableOpacity 
@@ -39,21 +69,21 @@ export default function PastUploadsScreen() {
         activeOpacity={0.7}
       >
         <View style={styles.cardHeader}>
-          <Text style={styles.merchant}>{item.merchant}</Text>
-          <Text style={styles.amount}>${item.amount}</Text>
+          <Text style={styles.merchant}>{item.merchant || 'Unknown Merchant'}</Text>
+          <Text style={styles.amount}>${item.amount_hkd || '0'}</Text>
         </View>
 
-        <Text style={styles.date}>{item.date}</Text>
+        <Text style={styles.date}>{item.date || '-'}</Text>
 
         {item.note ? <Text style={styles.note}>Note: {item.note}</Text> : null}
 
         <View style={styles.footer}>
           <View style={[styles.badge, { backgroundColor: sStyle.bg }]}>
             <MaterialIcons name={sStyle.icon} size={14} color={sStyle.color} style={{ marginRight: 4 }} />
-            <Text style={[styles.badgeText, { color: sStyle.color }]}>{item.status}</Text>
+            <Text style={[styles.badgeText, { color: sStyle.color }]}>{labelStatus}</Text>
           </View>
           
-          {(item.status === 'Action Required' || item.status === 'Pending') && (
+          {(labelStatus === 'Returned' || labelStatus === 'Pending') && (
             <MaterialIcons name="edit" size={20} color="#6b7280" />
           )}
         </View>
@@ -61,11 +91,19 @@ export default function PastUploadsScreen() {
     );
   };
 
+  if (loading) {
+    return (
+      <View style={styles.loadingWrap}>
+        <ActivityIndicator color="#6366f1" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <FlatList
-        data={mockClaims}
-        keyExtractor={item => item.id}
+        data={claims}
+        keyExtractor={item => item.id.toString()}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
       />
@@ -81,6 +119,12 @@ const styles = StyleSheet.create({
   listContent: {
     padding: 16,
     gap: 16,
+  },
+  loadingWrap: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f3f4f6',
   },
   card: {
     backgroundColor: '#ffffff',
