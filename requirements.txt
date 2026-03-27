@@ -153,7 +153,6 @@ puremagic==1.30
 pyarrow==22.0.0
 pyasn1==0.6.1
 pyasn1_modules==0.4.2
-PyAutoGUI==0.9.54
 pycares==4.11.0
 pycaw==20251023
 pycparser==2.23
@@ -187,7 +186,6 @@ python-pptx==1.0.2
 python-socketio==5.14.3
 pytweening==1.2.0
 pytz==2025.2
-pywin32==311
 pyxnat==1.6.3
 PyYAML==6.0.3
 pyzmq==27.1.0
