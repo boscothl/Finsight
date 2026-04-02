@@ -106,10 +106,9 @@ class DocumentAIService:
                 blob = bucket.blob(f"receipts/mobile_uploads/{safe_filename}")
                 file_data.seek(0)
                 blob.upload_from_file(file_data, content_type=mime_type)
-                # optionally make it public if public bucket, else we just use the API URL
-                blob.make_public() # Assuming we can make it public for now
                 gcs_uri = f"gs://{bucket_name}/{blob.name}"
-                public_url = blob.public_url
+                # Construct public URL manually
+                public_url = f"https://storage.googleapis.com/{bucket_name}/{blob.name}"
             except Exception as e:
                 print(f"Warning: Failed to upload to GCS - {e}")
 
