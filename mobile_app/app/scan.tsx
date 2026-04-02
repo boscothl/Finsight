@@ -60,6 +60,7 @@ export default function ScanScreen() {
         date: extraction.date || '',
         category: extraction.category || '',
         note: '',
+        public_url: extraction.public_url || '',
       });
     } catch {
       alert('Upload failed. Please ensure you are logged in and the API is reachable.');
@@ -78,6 +79,7 @@ export default function ScanScreen() {
         date: ocrResult.date || null,
         category: ocrResult.category,
         note: ocrResult.note,
+        receipt_url: ocrResult.public_url,
       });
       alert('Claim submitted successfully!');
       router.replace('/(tabs)/home');

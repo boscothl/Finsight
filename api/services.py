@@ -93,16 +93,23 @@ class DocumentAIService:
         bucket_name = os.getenv('GS_BUCKET_NAME', '')
 
         gcs_uri = None
+        public_url = None
 
         # 1. Upload to GCS
         if bucket_name:
             try:
+                # Add timestamp to filename to prevent overwriting
+                import time
+                safe_filename = f"{int(time.time())}_{original_filename}"
                 storage_client = storage.Client()
                 bucket = storage_client.bucket(bucket_name)
-                blob = bucket.blob(f"receipts/mobile_uploads/{original_filename}")
+                blob = bucket.blob(f"receipts/mobile_uploads/{safe_filename}")
                 file_data.seek(0)
                 blob.upload_from_file(file_data, content_type=mime_type)
+                # optionally make it public if public bucket, else we just use the API URL
+                blob.make_public() # Assuming we can make it public for now
                 gcs_uri = f"gs://{bucket_name}/{blob.name}"
+                public_url = blob.public_url
             except Exception as e:
                 print(f"Warning: Failed to upload to GCS - {e}")
 
@@ -128,11 +135,12 @@ class DocumentAIService:
                     "amount": float(data.get("amount", 0.0)),
                     "currency": "HKD",
                     "category": data.get("category", "Uncategorized"),
-                    "gcs_uri": gcs_uri
+                    "gcs_uri": gcs_uri,
+                    "public_url": public_url
                 }
             except Exception as e:
                 print("Fallback Gemini error:", e)
-                return {"merchant": f"Error: {str(e)}", "date": "2026-03-24", "amount": 0.0, "currency": "HKD", "category": "Error"}
+                return {"merchant": f"Error: {str(e)}", "date": "2026-03-24", "amount": 0.0, "currency": "HKD", "category": "Error", "public_url": public_url}
 
 
         try:
@@ -165,6 +173,7 @@ class DocumentAIService:
                 elif type_ == "currency":
                     extracted["currency"] = value
 
+            extracted["public_url"] = public_url
             return extracted
 
         except Exception as e:
@@ -173,7 +182,8 @@ class DocumentAIService:
                 "error": str(e),
                 "merchant": "Error Parsing",
                 "amount": 0.0,
-                "gcs_uri": gcs_uri
+                "gcs_uri": gcs_uri,
+                "public_url": public_url
             }
 
 class ChatbotService:

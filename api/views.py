@@ -53,6 +53,17 @@ class MobileClaimsView(views.APIView):
             note=data.get('note'),
             status='pending'
         )
+        
+        # Save receipt if url provided
+        receipt_url = data.get('receipt_url')
+        if receipt_url:
+            from api.models import ReceiptFile
+            ReceiptFile.objects.create(
+                claim=claim,
+                url=receipt_url,
+                ocr_json=data
+            )
+            
         return Response(ClaimSerializer(claim).data, status=status.HTTP_201_CREATED)
 
 class MobileUploadReceiptView(views.APIView):

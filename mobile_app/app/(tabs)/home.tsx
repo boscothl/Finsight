@@ -102,10 +102,12 @@ export default function HomeScreen() {
         </View>
       )}
 
-      <View style={styles.summaryCard}>
-        <Text style={styles.summaryTitle}>Recent Claims</Text>
-        <Text style={styles.summaryText}>{recentClaims.length} recent claim(s) loaded</Text>
-      </View>
+      <TouchableOpacity onPress={() => router.push('/past-uploads')} activeOpacity={0.7}>
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryTitle}>Recent Claims</Text>
+          <Text style={styles.summaryText}>{recentClaims.length} recent claim(s) loaded. Tap to view all.</Text>
+        </View>
+      </TouchableOpacity>
 
       <View style={styles.actionGrid}>
         <TouchableOpacity 

@@ -19,7 +19,9 @@ type ClaimItem = {
   amount_hkd: string | null;
   date: string | null;
   status: string;
+  category: string | null;
   note: string | null;
+  receipts: Array<{ url: string | null }>;
 };
 
 const toLabelStatus = (status: string) => {
@@ -51,11 +53,20 @@ export default function PastUploadsScreen() {
 
   const handlePressClaim = (claim: ClaimItem) => {
     const labelStatus = toLabelStatus(claim.status);
-    if (labelStatus === 'Returned' || labelStatus === 'Pending') {
-      router.push({ pathname: '/edit-claim', params: { id: claim.id, merchant: claim.merchant || '', amount: claim.amount_hkd || '0' } });
-    } else {
-      alert(`Claim from ${claim.merchant || 'Unknown Merchant'} is ${labelStatus}.`);
-    }
+    const receiptUrl = claim.receipts && claim.receipts.length > 0 ? claim.receipts[0].url : '';
+    router.push({ 
+      pathname: '/claim-details', 
+      params: { 
+        id: claim.id, 
+        merchant: claim.merchant || '', 
+        amount: claim.amount_hkd || '0',
+        date: claim.date || '',
+        category: claim.category || '',
+        note: claim.note || '',
+        status: labelStatus,
+        receiptUrl: receiptUrl || ''
+      } 
+    });
   };
 
   const renderItem = ({ item }: { item: ClaimItem }) => {
