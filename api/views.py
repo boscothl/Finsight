@@ -44,6 +44,13 @@ class MobileClaimsView(views.APIView):
 
     def post(self, request):
         data = request.data
+        
+        budget_pool_id = data.get('budget_pool_id')
+        budget_pool = None
+        if budget_pool_id:
+            from api.models import BudgetPool
+            budget_pool = BudgetPool.objects.filter(id=budget_pool_id, company=request.user.company).first()
+
         claim = Claim.objects.create(
             user=request.user,
             merchant=data.get('merchant'),
@@ -51,6 +58,7 @@ class MobileClaimsView(views.APIView):
             date=data.get('date') if data.get('date') else None,
             category=data.get('category'),
             note=data.get('note'),
+            budget_pool=budget_pool,
             status='pending'
         )
         

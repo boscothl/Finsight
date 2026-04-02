@@ -1,14 +1,29 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, ActivityIndicator, TouchableOpacity, ScrollView, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Image, ActivityIndicator, TouchableOpacity, ScrollView, TextInput, KeyboardAvoidingView, Platform, FlatList } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { router, Stack } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import { uploadReceipt, submitClaimData } from '../services/api';
+import { uploadReceipt, submitClaimData, fetchBudgetPools } from '../services/api';
 
 export default function ScanScreen() {
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [ocrResult, setOcrResult] = useState<any>(null);
+  const [budgetPools, setBudgetPools] = useState<any[]>([]);
+  const [selectedPoolId, setSelectedPoolId] = useState<number | null>(null);
+
+  useEffect(() => {
+    // Fetch budget pools when the component loads
+    const loadPools = async () => {
+      try {
+        const pools = await fetchBudgetPools();
+        setBudgetPools(pools || []);
+      } catch (error) {
+        console.error("Failed to load budget pools:", error);
+      }
+    };
+    loadPools();
+  }, []);
 
   const takePhoto = async () => {
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
@@ -80,6 +95,7 @@ export default function ScanScreen() {
         category: ocrResult.category,
         note: ocrResult.note,
         receipt_url: ocrResult.public_url,
+        budget_pool_id: selectedPoolId,
       });
       alert('Claim submitted successfully!');
       router.replace('/(tabs)/home');
@@ -159,6 +175,30 @@ export default function ScanScreen() {
               <Text style={styles.fieldLabel}>Category</Text>
               <TextInput style={styles.inputField} value={ocrResult.category} onChangeText={(t) => updateField('category', t)} placeholder="Category (e.g. Travel)" />
             </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.fieldLabel}>Budget Pool</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 8 }}>
+                {budgetPools.map((pool) => (
+                  <TouchableOpacity
+                    key={pool.id}
+                    onPress={() => setSelectedPoolId(pool.id)}
+                    style={{
+                      paddingHorizontal: 16,
+                      paddingVertical: 10,
+                      marginRight: 8,
+                      borderRadius: 20,
+                      backgroundColor: selectedPoolId === pool.id ? '#6366f1' : '#e5e7eb',
+                    }}
+                  >
+                    <Text style={{ color: selectedPoolId === pool.id ? '#fff' : '#374151', fontWeight: '500' }}>
+                      {pool.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+
             <View style={styles.inputGroup}>
               <Text style={styles.fieldLabel}>Note</Text>
               <TextInput style={styles.inputField} value={ocrResult.note} onChangeText={(t) => updateField('note', t)} placeholder="Optional note" multiline />

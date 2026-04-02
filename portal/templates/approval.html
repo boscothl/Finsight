@@ -82,8 +82,9 @@
             
             <div class="card-mid">
                 <p class="amount">HKD {{ claim.amount_hkd|floatformat:2 }}</p>
-                <p class="merchant"><i class="fas fa-store"></i> {{ claim.merchant|default:"Unknown Merchant" }}</p>
-            </div>
+                <p class="merchant"><i class="fas fa-store"></i> {{ claim.merchant|default:"Unknown Merchant" }}</p>                {% if claim.budget_pool %}
+                <p class="budget-pool-badge" style="font-size: 0.8rem; color: #666; margin-top: 0.5rem;"><i class="fas fa-wallet"></i> {{ claim.budget_pool.name }}</p>
+                {% endif %}            </div>
 
             <div class="card-actions">
                 <button class="btn btn-outline" onclick="openClaimModal('{{ claim.id }}', '{{ claim.merchant|escapejs }}', '{{ claim.amount_hkd|default:'' }}', '{{ claim.date|date:'Y-m-d' }}', '{% if claim.receipts.first %}{{ claim.receipts.first.url|default:'' }}{% endif %}', '{{ claim.category|escapejs }}', '{{ claim.note|escapejs }}')">
@@ -110,6 +111,7 @@
                     <th>ID</th>
                     <th>User</th>
                     <th>Category</th>
+                    <th>Budget Pool</th>
                     <th>Amount</th>
                     <th>Date</th>
                     <th>Status</th>
@@ -127,6 +129,7 @@
                         </div>
                     </td>
                     <td>{{ claim.category }}</td>
+                    <td>{{ claim.budget_pool.name|default:"-" }}</td>
                     <td>HKD {{ claim.amount_hkd }}</td>
                     <td>{{ claim.created_at|date:"M d, Y" }}</td>
                     <td>
@@ -135,11 +138,11 @@
                         </span>
                     </td>
                     <td>
-                        <button class="btn-icon" onclick="openClaimModal('{{ claim.id }}', '{{ claim.merchant|escapejs }}', '{{ claim.amount_hkd|default:'' }}', '{{ claim.date|date:'Y-m-d' }}', '{% if claim.receipts.first %}{{ claim.receipts.first.url|default:'' }}{% endif %}', '{{ claim.category|escapejs }}', '{{ claim.note|escapejs }}', true)"><i class="fas fa-chevron-right"></i></button>
+                        <button class="btn-icon" onclick="openClaimModal('{{ claim.id }}', '{{ claim.merchant|escapejs }}', '{{ claim.amount_hkd|default:"" }}', '{{ claim.date|date:"Y-m-d" }}', '{% if claim.receipts.first %}{{ claim.receipts.first.url|default:"" }}{% endif %}', '{{ claim.category|escapejs }}', '{{ claim.note|escapejs }}', true)"><i class="fas fa-chevron-right"></i></button>
                     </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="7" class="text-center">No history found.</td></tr>
+                <tr><td colspan="8" class="text-center">No history found.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
