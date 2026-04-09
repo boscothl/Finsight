@@ -141,11 +141,6 @@ export const sendComplianceQuestion = async (query: string) => {
   return response.data;
 };
 
-export const fetchBudgetPools = async () => {
-  const response = await api.get('/mobile/budget-pools/');
-  return response.data;
-};
-
 export const submitClaimData = async (claimData: any) => {
   const response = await api.post('/mobile/claims/', claimData);
   return response.data;

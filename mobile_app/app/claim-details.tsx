@@ -31,6 +31,15 @@ export default function ClaimDetailsScreen() {
       {params.date ? <Text style={styles.detailText}>Date: {params.date}</Text> : null}
       {params.category ? <Text style={styles.detailText}>Category: {params.category}</Text> : null}
       
+      {['Rejected', 'Returned'].includes(labelStatus) ? (
+        <View style={[styles.noteBox, { borderColor: '#fca5a5', backgroundColor: '#fef2f2' }]}>
+          <Text style={[styles.noteLabel, { color: '#dc2626' }]}>Rejection Reason:</Text>
+          <Text style={[styles.noteText, { color: '#991b1b', fontStyle: params.rejection_reason ? 'normal' : 'italic' }]}>
+            {params.rejection_reason ? params.rejection_reason : 'No specific reason was provided by the admin.'}
+          </Text>
+        </View>
+      ) : null}
+
       {params.note ? (
         <View style={styles.noteBox}>
           <Text style={styles.noteLabel}>Note:</Text>

@@ -22,6 +22,7 @@ type ClaimItem = {
   category: string | null;
   note: string | null;
   receipts: Array<{ url: string | null }>;
+  rejection_reason: string | null;
 };
 
 const toLabelStatus = (status: string) => {
@@ -64,7 +65,8 @@ export default function PastUploadsScreen() {
         category: claim.category || '',
         note: claim.note || '',
         status: labelStatus,
-        receiptUrl: receiptUrl || ''
+        receiptUrl: receiptUrl || '',
+        rejection_reason: claim.rejection_reason || ''
       } 
     });
   };
