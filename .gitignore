@@ -6,3 +6,5 @@ plan-finsightMvp.prompt.md
 **/__pycache__/
 *.pyc
 start_dev.bat
+/Markdown
+Finisght Technical Report.docx

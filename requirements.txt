@@ -164,7 +164,6 @@ PyMuPDF==1.26.5
 PyNaCl==1.6.0
 pyparsing==3.2.5
 pyperclip==1.11.0
-
 PySocks==1.7.1
 pytest==8.4.2
 pytest-asyncio==1.2.0

@@ -3,9 +3,57 @@ from rest_framework import status, views
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from .models import BudgetPool, Claim
+from .models import BudgetPool, Claim, PolicyDoc
 from .serializers import BudgetPoolSerializer, ClaimSerializer
 from .services import DocumentAIService
+
+
+def _build_compliance_prompt(user, query):
+    company = user.company
+    if not company:
+        return (
+            "You are a strict financial compliance assistant. "
+            "The user has no company configured, so you must ask them to contact admin to complete setup."
+            f"\n\nUser question: {query}"
+        )
+
+    policy_docs = PolicyDoc.objects.filter(company=company).order_by("id")
+
+    combined_policy_chunks = []
+    for doc in policy_docs:
+        if not doc.content_text:
+            continue
+        combined_policy_chunks.append(
+            f"[PolicyDoc: {doc.title} | version: {doc.version}]\n{doc.content_text.strip()}"
+        )
+
+    combined_policy_text = "\n\n".join(combined_policy_chunks)
+    if not combined_policy_text:
+        combined_policy_text = "No policy documents are available for this company."
+
+    return f"""
+You are the Finsight iOS Compliance Chatbot for company: {company.name}.
+
+Role and strictness requirements:
+- You are NOT lenient. Enforce policy exactly as written.
+- Do not invent policy rules, thresholds, or approvals.
+- If details are missing (amount, category, claim type, date, approver level, purpose), ask concise follow-up questions before giving final judgment.
+- If policy text does not clearly cover a case, say it is "not explicitly stated" and request escalation to finance/admin.
+- Provide practical next steps for compliant submission.
+
+Response style requirements:
+- Keep responses concise and actionable.
+- End every answer with either:
+  1) a clear compliance decision (Allowed / Not Allowed / Needs Clarification), or
+  2) a short list of required follow-up questions.
+- Quote or reference the relevant policy section in plain text whenever possible.
+
+Company policy context (source of truth):
+{combined_policy_text}
+
+User question:
+{query}
+"""
 
 # Mobile API Views
 
@@ -101,12 +149,16 @@ class MobileUploadReceiptView(views.APIView):
 @permission_classes([IsAuthenticated])
 def compliance_chat_view(request):
     query = request.data.get('query', '')
+    if not query:
+        return Response({'answer': 'Please enter a compliance question.'}, status=status.HTTP_400_BAD_REQUEST)
+
     try:
         from vertexai.generative_models import GenerativeModel
         import vertexai
+
         vertexai.init(project="finsight-484914", location="us-central1")
         model = GenerativeModel("gemini-2.5-pro")
-        prompt = f"You are a helpful AI assisting an employee with their financial policy queries. Answer this question briefly: {query}"
+        prompt = _build_compliance_prompt(request.user, query)
         response = model.generate_content(prompt)
         answer = response.text
     except Exception as e:
