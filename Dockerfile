@@ -9,6 +9,9 @@ ENV PYTHONUNBUFFERED=1
 # Set work directory
 WORKDIR /app
 
+# Use lean production dependencies by default.
+ARG REQUIREMENTS_FILE=requirements.prod.txt
+
 # Install system dependencies required for some python packages (like database drivers)
 RUN apt-get update && apt-get install -y \
     gcc \
@@ -16,8 +19,8 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
+COPY ${REQUIREMENTS_FILE} /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # Copy project
 COPY . /app/
